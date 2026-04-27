@@ -9,6 +9,22 @@ import { Mail, Lock, Loader2 } from 'lucide-react'
 
 type Mode = 'signin' | 'signup'
 
+const ERROR_MAP: Record<string, string> = {
+  'Invalid login credentials': 'Email o contraseña incorrectos.',
+  'Email not confirmed': 'Debes confirmar tu correo antes de entrar. Revisa tu bandeja de entrada.',
+  'User already registered': 'Ya existe una cuenta con ese email. Intenta entrar.',
+  'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
+  'Signup requires a valid password': 'Ingresa una contraseña válida.',
+  'rate limit': 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
+}
+
+function translateError(msg: string): string {
+  for (const [key, val] of Object.entries(ERROR_MAP)) {
+    if (msg.toLowerCase().includes(key.toLowerCase())) return val
+  }
+  return msg
+}
+
 export default function Login() {
   const { user, loading } = useAuth()
   const toast = useToast()
@@ -17,6 +33,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [showReset, setShowReset] = useState(false)
+  const [pendingConfirm, setPendingConfirm] = useState(false)
 
   if (loading) return <FullCenterLoader />
   if (user) return <Navigate to="/" replace />
@@ -30,16 +47,21 @@ export default function Login() {
         if (error) throw error
         toast.show('¡Hola de nuevo!', 'success')
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin },
         })
         if (error) throw error
-        toast.show('Cuenta creada — revisa tu correo si pide confirmación', 'success')
+        // Si session es null, Supabase requiere confirmación de email
+        if (!data.session) {
+          setPendingConfirm(true)
+        } else {
+          toast.show('¡Cuenta creada!', 'success')
+        }
       }
     } catch (err: any) {
-      toast.show(err.message || 'Algo falló, intenta de nuevo', 'error')
+      toast.show(translateError(err.message || 'Algo falló, intenta de nuevo'), 'error')
     } finally {
       setBusy(false)
     }
@@ -55,6 +77,31 @@ export default function Login() {
       toast.show(error.message, 'error')
       setBusy(false)
     }
+  }
+
+  if (pendingConfirm) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center px-5 py-10 relative z-10">
+        <div className="w-full max-w-sm text-center">
+          <Logo size="xl" />
+          <div className="neta-card mt-10 space-y-4">
+            <div className="text-4xl">📬</div>
+            <h2 className="text-xl font-semibold">Revisa tu correo</h2>
+            <p className="text-muted text-sm leading-relaxed">
+              Te enviamos un enlace de confirmación a <span className="text-primary font-medium">{email}</span>.
+              Ábrelo para activar tu cuenta y luego vuelve aquí a entrar.
+            </p>
+            <p className="text-xs text-muted">¿No lo ves? Revisa la carpeta de spam.</p>
+            <button
+              onClick={() => { setPendingConfirm(false); setMode('signin') }}
+              className="neta-btn-primary w-full"
+            >
+              Ya confirmé, quiero entrar
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
