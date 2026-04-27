@@ -73,3 +73,45 @@ export function shiftMonth(yyyymm: string, delta: number): string {
   const d = new Date(Date.UTC(y, m - 1 + delta, 1))
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
 }
+
+export function relativeDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const that = new Date(y, m - 1, d).getTime()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const diff = Math.round((today.getTime() - that) / 86400000)
+
+  if (diff === 0) return 'Hoy'
+  if (diff === 1) return 'Ayer'
+  if (diff === -1) return 'Mañana'
+  if (diff > 1 && diff < 7) return `Hace ${diff} días`
+  if (diff >= 7 && diff < 14) return 'Hace 1 semana'
+  if (diff >= 14 && diff < 30) return `Hace ${Math.floor(diff / 7)} semanas`
+  if (diff < 0 && diff > -7) return `En ${-diff} días`
+  // Fallback: dd/mm/yyyy
+  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
+}
+
+export function shortDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
+}
+
+const ACCENT_MAP: Record<string, string> = {
+  a: 'a', á: 'a', à: 'a', ä: 'a', â: 'a',
+  e: 'e', é: 'e', è: 'e', ë: 'e', ê: 'e',
+  i: 'i', í: 'i', ì: 'i', ï: 'i', î: 'i',
+  o: 'o', ó: 'o', ò: 'o', ö: 'o', ô: 'o',
+  u: 'u', ú: 'u', ù: 'u', ü: 'u', û: 'u',
+  ñ: 'n',
+}
+
+export function clientKey(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .split('')
+    .map(ch => ACCENT_MAP[ch] ?? ch)
+    .join('')
+    .replace(/\s+/g, ' ')
+}

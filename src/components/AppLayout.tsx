@@ -1,15 +1,16 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ClipboardList, Wallet, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { cn } from '@/lib/utils'
 
 const tabs = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/procedimientos', label: 'Procedimientos', icon: ClipboardList, end: false },
-  { to: '/gastos', label: 'Gastos', icon: Wallet, end: false },
-  { to: '/configuracion', label: 'Configuración', icon: Settings, end: false },
+  { to: '/', label: 'Dashboard', shortLabel: 'Inicio', icon: LayoutDashboard, end: true },
+  { to: '/procedimientos', label: 'Procedimientos', shortLabel: 'Servicios', icon: ClipboardList, end: false },
+  { to: '/clientes', label: 'Clientes', shortLabel: 'Clientes', icon: Users, end: false },
+  { to: '/gastos', label: 'Gastos', shortLabel: 'Gastos', icon: Wallet, end: false },
+  { to: '/configuracion', label: 'Configuración', shortLabel: 'Config', icon: Settings, end: false },
 ]
 
 export default function AppLayout() {
@@ -82,7 +83,7 @@ export default function AppLayout() {
 
       {/* Bottom nav mobile */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-bg/95 backdrop-blur-lg border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {tabs.map(t => (
             <NavLink
               key={t.to}
@@ -90,13 +91,13 @@ export default function AppLayout() {
               end={t.end}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center justify-center gap-1 py-3 text-[11px] transition',
+                  'flex flex-col items-center justify-center gap-1 py-3 text-[10px] transition',
                   isActive ? 'text-accent' : 'text-muted',
                 )
               }
             >
               <t.icon size={20} />
-              <span>{t.label === 'Configuración' ? 'Config' : t.label}</span>
+              <span>{t.shortLabel}</span>
             </NavLink>
           ))}
         </div>

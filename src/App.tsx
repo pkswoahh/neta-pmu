@@ -10,6 +10,7 @@ import Onboarding from '@/pages/Onboarding'
 import RecoverPassword from '@/pages/RecoverPassword'
 import Dashboard from '@/pages/Dashboard'
 import Procedimientos from '@/pages/Procedimientos'
+import Clientes from '@/pages/Clientes'
 import Gastos from '@/pages/Gastos'
 import Configuracion from '@/pages/Configuracion'
 
@@ -27,6 +28,7 @@ export default function App() {
               <Route element={<RequireAuthAndOnboarded><AppLayout /></RequireAuthAndOnboarded>}>
                 <Route index element={<Dashboard />} />
                 <Route path="procedimientos" element={<Procedimientos />} />
+                <Route path="clientes" element={<Clientes />} />
                 <Route path="gastos" element={<Gastos />} />
                 <Route path="configuracion" element={<Configuracion />} />
               </Route>

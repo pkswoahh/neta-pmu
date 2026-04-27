@@ -10,7 +10,9 @@ import MoneyInput from '@/components/MoneyInput'
 import MonthSelector from '@/components/MonthSelector'
 import Select from '@/components/Select'
 import Empty from '@/components/Empty'
-import { currentMonth, formatMoney, monthRange, todayISO } from '@/lib/utils'
+import { ListSkeleton } from '@/components/Skeleton'
+import ClientHistoryModal from '@/components/ClientHistoryModal'
+import { currentMonth, formatMoney, monthRange, relativeDate, todayISO } from '@/lib/utils'
 import type { Procedure } from '@/types/database'
 
 export default function Procedimientos() {
@@ -24,6 +26,7 @@ export default function Procedimientos() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Procedure | null>(null)
+  const [historyClient, setHistoryClient] = useState<string | null>(null)
 
   async function load() {
     if (!user) return
@@ -82,7 +85,7 @@ export default function Procedimientos() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-14 text-muted"><Loader2 className="animate-spin" /></div>
+        <ListSkeleton rows={5} />
       ) : items.length === 0 ? (
         <div className="neta-card">
           <Empty
@@ -97,8 +100,14 @@ export default function Procedimientos() {
             <li key={p.id} className="neta-card !p-4 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="font-medium truncate">{p.client_name}</span>
-                  <span className="text-xs text-muted">{formatDateShort(p.date)}</span>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryClient(p.client_name)}
+                    className="font-medium truncate hover:text-accent transition-colors text-left"
+                  >
+                    {p.client_name}
+                  </button>
+                  <span className="text-xs text-muted">{relativeDate(p.date)}</span>
                 </div>
                 <div className="text-sm text-muted truncate">
                   {p.procedure_type} · {p.payment_method}
@@ -116,6 +125,14 @@ export default function Procedimientos() {
         </ul>
       )}
 
+      {historyClient && (
+        <ClientHistoryModal
+          open
+          clientName={historyClient}
+          onClose={() => setHistoryClient(null)}
+        />
+      )}
+
       {showForm && (
         <ProcedureForm
           editing={editing}
@@ -129,11 +146,6 @@ export default function Procedimientos() {
       )}
     </div>
   )
-}
-
-function formatDateShort(iso: string) {
-  const [y, m, d] = iso.split('-').map(Number)
-  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
 }
 
 interface FormProps {

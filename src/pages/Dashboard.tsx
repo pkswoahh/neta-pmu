@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Loader2, TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X } from 'lucide-react'
+import { TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import MonthSelector from '@/components/MonthSelector'
 import MoneyInput from '@/components/MoneyInput'
+import { DashboardSkeleton } from '@/components/Skeleton'
 import { currentMonth, formatMoney, monthRange } from '@/lib/utils'
 import type { Expense, Procedure } from '@/types/database'
 
@@ -106,7 +107,7 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20 text-muted"><Loader2 className="animate-spin" /></div>
+        <DashboardSkeleton />
       ) : (
         <>
           {/* Meta mensual */}

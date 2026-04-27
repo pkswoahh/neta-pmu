@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-28
+Última actualización: 2026-04-28 (sesión 2)
 
 ---
 
@@ -21,6 +21,11 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] Custom Select estilizado (reemplaza nativos feos)
 - [x] Modal de confirmación bonito (reemplaza `confirm()` del navegador)
 - [x] Recuperación de contraseña (link en login + email + página `/cambiar-password`)
+- [x] PWA instalable (manifest, iconos 192/512/maskable, service worker con Workbox)
+- [x] Skeletons de carga en Dashboard, Procedimientos, Gastos y Clientes
+- [x] Fechas relativas ("Hoy", "Ayer", "Hace 3 días")
+- [x] Vista de cliente / historial — modal con stats + lista de visitas
+- [x] Página Clientes con lista agregada, búsqueda y avatar de iniciales
 - [x] Repo en GitHub con commits + push
 - [x] Build production verificado
 
@@ -40,13 +45,13 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 ## ⭐ Importantes (UX y diferenciación)
 
-- [ ] **Búsqueda en Procedimientos y Gastos** — por nombre de cliente / descripción
+- [ ] **Búsqueda en Procedimientos y Gastos** — por nombre de cliente / descripción (Clientes ya tiene búsqueda)
 - [ ] **Filtros avanzados** — rango de fechas custom (no solo mes), por procedimiento, por categoría
-- [ ] **Vista de cliente / historial** — al tocar un nombre, ver todos sus servicios pasados, total gastado, último visit
-- [ ] **PWA instalable** — manifest + service worker + prompt de instalación
+- [x] ~~Vista de cliente / historial~~
+- [x] ~~PWA instalable~~
 - [ ] **Comparación con mes anterior** en Dashboard ("Llevas 23% más que en marzo")
-- [ ] **Skeletons de carga** — reemplazar spinners por placeholders por sección
-- [ ] **Fechas relativas** — "Hoy", "Ayer", "Hace 3 días"
+- [x] ~~Skeletons de carga~~
+- [x] ~~Fechas relativas~~
 - [ ] **Exportar a Excel/CSV** — procedimientos y gastos del mes / rango
 - [ ] **Validación al borrar opciones de Configuración** — advertir si tienen registros asociados
 - [ ] **Mensajes de error de Supabase traducidos al español**

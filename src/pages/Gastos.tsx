@@ -10,7 +10,8 @@ import MoneyInput from '@/components/MoneyInput'
 import MonthSelector from '@/components/MonthSelector'
 import Select from '@/components/Select'
 import Empty from '@/components/Empty'
-import { currentMonth, formatMoney, monthRange, todayISO } from '@/lib/utils'
+import { ListSkeleton } from '@/components/Skeleton'
+import { currentMonth, formatMoney, monthRange, relativeDate, todayISO } from '@/lib/utils'
 import type { Expense } from '@/types/database'
 
 export default function Gastos() {
@@ -82,7 +83,7 @@ export default function Gastos() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-14 text-muted"><Loader2 className="animate-spin" /></div>
+        <ListSkeleton rows={5} />
       ) : items.length === 0 ? (
         <div className="neta-card">
           <Empty
@@ -98,7 +99,7 @@ export default function Gastos() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="font-medium truncate">{g.description}</span>
-                  <span className="text-xs text-muted">{formatDateShort(g.date)}</span>
+                  <span className="text-xs text-muted">{relativeDate(g.date)}</span>
                 </div>
                 <div className="text-sm text-muted truncate">{g.category}</div>
               </div>
@@ -125,11 +126,6 @@ export default function Gastos() {
       )}
     </div>
   )
-}
-
-function formatDateShort(iso: string) {
-  const [y, m, d] = iso.split('-').map(Number)
-  return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
 }
 
 interface FormProps {
