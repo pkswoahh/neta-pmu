@@ -2,10 +2,12 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { ProfileProvider, useProfile } from '@/contexts/ProfileContext'
 import { ToastProvider } from '@/components/Toast'
+import { ConfirmProvider } from '@/components/Confirm'
 import Particles from '@/components/Particles'
 import AppLayout from '@/components/AppLayout'
 import Login, { FullCenterLoader } from '@/pages/Login'
 import Onboarding from '@/pages/Onboarding'
+import RecoverPassword from '@/pages/RecoverPassword'
 import Dashboard from '@/pages/Dashboard'
 import Procedimientos from '@/pages/Procedimientos'
 import Gastos from '@/pages/Gastos'
@@ -14,22 +16,25 @@ import Configuracion from '@/pages/Configuracion'
 export default function App() {
   return (
     <ToastProvider>
-      <AuthProvider>
-        <ProfileProvider>
-          <Particles />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/bienvenida" element={<RequireAuth><Onboarding /></RequireAuth>} />
-            <Route element={<RequireAuthAndOnboarded><AppLayout /></RequireAuthAndOnboarded>}>
-              <Route index element={<Dashboard />} />
-              <Route path="procedimientos" element={<Procedimientos />} />
-              <Route path="gastos" element={<Gastos />} />
-              <Route path="configuracion" element={<Configuracion />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </ProfileProvider>
-      </AuthProvider>
+      <ConfirmProvider>
+        <AuthProvider>
+          <ProfileProvider>
+            <Particles />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/cambiar-password" element={<RecoverPassword />} />
+              <Route path="/bienvenida" element={<RequireAuth><Onboarding /></RequireAuth>} />
+              <Route element={<RequireAuthAndOnboarded><AppLayout /></RequireAuthAndOnboarded>}>
+                <Route index element={<Dashboard />} />
+                <Route path="procedimientos" element={<Procedimientos />} />
+                <Route path="gastos" element={<Gastos />} />
+                <Route path="configuracion" element={<Configuracion />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ProfileProvider>
+        </AuthProvider>
+      </ConfirmProvider>
     </ToastProvider>
   )
 }

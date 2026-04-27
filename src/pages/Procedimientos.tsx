@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
+import { useConfirm } from '@/components/Confirm'
 import Modal from '@/components/Modal'
 import MoneyInput from '@/components/MoneyInput'
 import MonthSelector from '@/components/MonthSelector'
@@ -16,6 +17,7 @@ export default function Procedimientos() {
   const { user } = useAuth()
   const { profile, byType } = useProfile()
   const toast = useToast()
+  const confirm = useConfirm()
 
   const [month, setMonth] = useState(currentMonth())
   const [items, setItems] = useState<Procedure[]>([])
@@ -43,7 +45,13 @@ export default function Procedimientos() {
   useEffect(() => { void load() }, [user, month])
 
   async function deleteItem(p: Procedure) {
-    if (!confirm(`¿Eliminar el procedimiento de ${p.client_name}?`)) return
+    const ok = await confirm({
+      title: 'Eliminar procedimiento',
+      message: `¿Seguro que quieres eliminar el procedimiento de ${p.client_name}? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    })
+    if (!ok) return
     const { error } = await supabase.from('procedures').delete().eq('id', p.id)
     if (error) toast.show(error.message, 'error')
     else {

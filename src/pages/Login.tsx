@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import Logo from '@/components/Logo'
+import Modal from '@/components/Modal'
 import { useToast } from '@/components/Toast'
 import { Mail, Lock, Loader2 } from 'lucide-react'
 
@@ -15,6 +16,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const [showReset, setShowReset] = useState(false)
 
   if (loading) return <FullCenterLoader />
   if (user) return <Navigate to="/" replace />
@@ -79,7 +81,18 @@ export default function Login() {
             </div>
           </div>
           <div>
-            <label className="neta-label">Contraseña</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm text-muted">Contraseña</label>
+              {mode === 'signin' && (
+                <button
+                  type="button"
+                  onClick={() => setShowReset(true)}
+                  className="text-xs text-accent hover:underline"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              )}
+            </div>
             <div className="relative">
               <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
               <input
@@ -124,7 +137,77 @@ export default function Login() {
           )}
         </div>
       </div>
+
+      {showReset && <ResetPasswordModal initialEmail={email} onClose={() => setShowReset(false)} />}
     </div>
+  )
+}
+
+function ResetPasswordModal({ initialEmail, onClose }: { initialEmail: string; onClose: () => void }) {
+  const toast = useToast()
+  const [email, setEmail] = useState(initialEmail)
+  const [busy, setBusy] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/cambiar-password`,
+    })
+    setBusy(false)
+    if (error) toast.show(error.message, 'error')
+    else {
+      setSent(true)
+      toast.show('Te enviamos un correo', 'success')
+    }
+  }
+
+  return (
+    <Modal
+      open
+      title="Recuperar contraseña"
+      onClose={onClose}
+      footer={
+        sent ? (
+          <button type="button" onClick={onClose} className="neta-btn-primary">Listo</button>
+        ) : (
+          <>
+            <button type="button" onClick={onClose} className="neta-btn-ghost">Cancelar</button>
+            <button type="submit" form="reset-form" disabled={busy} className="neta-btn-primary flex items-center gap-2">
+              {busy && <Loader2 size={16} className="animate-spin" />}
+              Enviar enlace
+            </button>
+          </>
+        )
+      }
+    >
+      {sent ? (
+        <div className="text-sm leading-relaxed space-y-3">
+          <p>Te enviamos un correo a <span className="text-primary font-medium">{email}</span> con un enlace para crear una contraseña nueva.</p>
+          <p className="text-muted">Si no lo ves en unos minutos, revisa la carpeta de spam.</p>
+        </div>
+      ) : (
+        <form id="reset-form" onSubmit={submit} className="space-y-4">
+          <p className="text-sm text-muted">Te enviaremos un enlace al correo registrado para que puedas crear una contraseña nueva.</p>
+          <div>
+            <label className="neta-label">Email</label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                className="neta-input pl-10"
+                autoFocus
+              />
+            </div>
+          </div>
+        </form>
+      )}
+    </Modal>
   )
 }
 

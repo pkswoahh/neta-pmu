@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
+import { useConfirm } from '@/components/Confirm'
 import Modal from '@/components/Modal'
 import MoneyInput from '@/components/MoneyInput'
 import MonthSelector from '@/components/MonthSelector'
@@ -16,6 +17,7 @@ export default function Gastos() {
   const { user } = useAuth()
   const { profile, byType } = useProfile()
   const toast = useToast()
+  const confirm = useConfirm()
 
   const [month, setMonth] = useState(currentMonth())
   const [items, setItems] = useState<Expense[]>([])
@@ -43,7 +45,13 @@ export default function Gastos() {
   useEffect(() => { void load() }, [user, month])
 
   async function deleteItem(g: Expense) {
-    if (!confirm(`¿Eliminar "${g.description}"?`)) return
+    const ok = await confirm({
+      title: 'Eliminar gasto',
+      message: `¿Seguro que quieres eliminar "${g.description}"? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    })
+    if (!ok) return
     const { error } = await supabase.from('expenses').delete().eq('id', g.id)
     if (error) toast.show(error.message, 'error')
     else {

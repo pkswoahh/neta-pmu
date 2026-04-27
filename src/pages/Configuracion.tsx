@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/components/Toast'
+import { useConfirm } from '@/components/Confirm'
 import MoneyInput from '@/components/MoneyInput'
 import Select from '@/components/Select'
 import type { OptionType, UserOption } from '@/types/database'
@@ -107,6 +108,7 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
   const { user } = useAuth()
   const { byType } = useProfile()
   const toast = useToast()
+  const confirm = useConfirm()
   const items = byType(type)
 
   const [adding, setAdding] = useState('')
@@ -126,7 +128,13 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
   }
 
   async function deleteItem(opt: UserOption) {
-    if (!confirm(`¿Eliminar "${opt.value}"?`)) return
+    const ok = await confirm({
+      title: 'Eliminar opción',
+      message: `¿Eliminar "${opt.value}"? Los registros que ya usan esta opción seguirán mostrándola, pero no podrás elegirla en nuevos formularios.`,
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    })
+    if (!ok) return
     const { error } = await supabase.from('user_options').delete().eq('id', opt.id)
     if (error) toast.show(error.message, 'error')
     else {

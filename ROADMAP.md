@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-27
+Última actualización: 2026-04-28
 
 ---
 
@@ -19,6 +19,8 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] Módulo Gastos (CRUD + filtro por mes)
 - [x] Dashboard (meta editable, cards, breakdowns por origen/tipo/pago/categoría)
 - [x] Custom Select estilizado (reemplaza nativos feos)
+- [x] Modal de confirmación bonito (reemplaza `confirm()` del navegador)
+- [x] Recuperación de contraseña (link en login + email + página `/cambiar-password`)
 - [x] Repo en GitHub con commits + push
 - [x] Build production verificado
 
@@ -26,9 +28,9 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 ## 🚨 Críticos (antes de cobrar)
 
-- [ ] **Recuperación de contraseña** — pantalla "Olvidé mi contraseña" + email de reset
+- [x] ~~Recuperación de contraseña~~
+- [x] ~~Modal de confirmación bonito~~
 - [ ] **Confirmación de email en producción** — activar y manejar el flow
-- [ ] **Modal de confirmación bonito** — reemplazar `confirm()` del navegador (afecta delete en Procedimientos, Gastos y Configuración)
 - [ ] **Pasarela de pago (Stripe o MercadoPago)** — suscripción $15 USD/mes
 - [ ] **Trial de 14 días** — gating por `subscription_status`
 - [ ] **Términos y Política de Privacidad** — drafts y página legal
