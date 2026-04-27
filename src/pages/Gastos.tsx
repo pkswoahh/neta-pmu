@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast'
 import Modal from '@/components/Modal'
 import MoneyInput from '@/components/MoneyInput'
 import MonthSelector from '@/components/MonthSelector'
+import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { currentMonth, formatMoney, monthRange, todayISO } from '@/lib/utils'
 import type { Expense } from '@/types/database'
@@ -202,9 +203,7 @@ function ExpenseForm({ editing, onClose, onSaved, categories, currency }: FormPr
             {categories.length === 0 ? (
               <p className="text-xs text-negative bg-negative/10 border border-negative/20 rounded-xl px-3 py-2.5">Configura tus opciones en Configuración</p>
             ) : (
-              <select className="neta-input" value={category} onChange={e => setCategory(e.target.value)}>
-                {categories.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <Select value={category} onChange={setCategory} options={categories} />
             )}
           </div>
         </div>

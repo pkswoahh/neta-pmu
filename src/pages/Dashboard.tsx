@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Loader2, TrendingUp, TrendingDown, Sparkles, Target, Edit2, Check, X } from 'lucide-react'
+import { Loader2, TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -172,7 +172,7 @@ export default function Dashboard() {
             <SummaryCard
               label="Procedimientos"
               value={String(procs.length)}
-              icon={<Sparkles size={16} className="text-accent" />}
+              icon={<ClipboardList size={16} className="text-accent" />}
               hint={`${stats.newClients} nuevos · ${stats.recurring} frecuentes`}
             />
           </div>

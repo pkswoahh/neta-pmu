@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Sparkles, Wallet, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, Wallet, Settings, LogOut } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 const tabs = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/procedimientos', label: 'Procedimientos', icon: Sparkles, end: false },
+  { to: '/procedimientos', label: 'Procedimientos', icon: ClipboardList, end: false },
   { to: '/gastos', label: 'Gastos', icon: Wallet, end: false },
   { to: '/configuracion', label: 'Configuración', icon: Settings, end: false },
 ]

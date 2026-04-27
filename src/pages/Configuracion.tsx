@@ -5,6 +5,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/components/Toast'
 import MoneyInput from '@/components/MoneyInput'
+import Select from '@/components/Select'
 import type { OptionType, UserOption } from '@/types/database'
 
 const CURRENCIES = [
@@ -75,9 +76,11 @@ export default function Configuracion() {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="neta-label">Moneda</label>
-            <select className="neta-input" value={currency} onChange={e => setCurrency(e.target.value)}>
-              {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code} — {c.name}</option>)}
-            </select>
+            <Select
+              value={currency}
+              onChange={setCurrency}
+              options={CURRENCIES.map(c => ({ value: c.code, label: `${c.code} — ${c.name}` }))}
+            />
           </div>
           <div>
             <label className="neta-label">Meta mensual de ingresos</label>

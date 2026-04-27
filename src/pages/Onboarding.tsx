@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import Logo from '@/components/Logo'
+import Select from '@/components/Select'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
 import { Loader2, ArrowRight } from 'lucide-react'
@@ -63,15 +64,11 @@ export default function Onboarding() {
           </div>
           <div>
             <label className="neta-label">Moneda</label>
-            <select
+            <Select
               value={currency}
-              onChange={e => setCurrency(e.target.value)}
-              className="neta-input"
-            >
-              {CURRENCIES.map(c => (
-                <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
-              ))}
-            </select>
+              onChange={setCurrency}
+              options={CURRENCIES.map(c => ({ value: c.code, label: `${c.code} — ${c.name}` }))}
+            />
           </div>
           <button type="submit" disabled={busy} className="neta-btn-primary flex items-center justify-center gap-2">
             {busy ? <Loader2 size={16} className="animate-spin" /> : <>Continuar <ArrowRight size={16} /></>}

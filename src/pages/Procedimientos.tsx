@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Edit2, Trash2, Sparkles, Loader2 } from 'lucide-react'
+import { Plus, Edit2, Trash2, ClipboardList, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast'
 import Modal from '@/components/Modal'
 import MoneyInput from '@/components/MoneyInput'
 import MonthSelector from '@/components/MonthSelector'
+import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { currentMonth, formatMoney, monthRange, todayISO } from '@/lib/utils'
 import type { Procedure } from '@/types/database'
@@ -77,7 +78,7 @@ export default function Procedimientos() {
       ) : items.length === 0 ? (
         <div className="neta-card">
           <Empty
-            icon={<Sparkles size={32} />}
+            icon={<ClipboardList size={32} />}
             title="Aún no hay procedimientos este mes"
             hint="Toca «Nuevo» para registrar el primero."
           />
@@ -214,9 +215,7 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
             {procedures.length === 0 ? (
               <p className="text-xs text-negative bg-negative/10 border border-negative/20 rounded-xl px-3 py-2.5">Configura tus opciones en Configuración</p>
             ) : (
-              <select className="neta-input" value={procType} onChange={e => setProcType(e.target.value)}>
-                {procedures.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <Select value={procType} onChange={setProcType} options={procedures} />
             )}
           </div>
         </div>
@@ -240,9 +239,7 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
             {payments.length === 0 ? (
               <p className="text-xs text-negative bg-negative/10 border border-negative/20 rounded-xl px-3 py-2.5">Configura tus opciones en Configuración</p>
             ) : (
-              <select className="neta-input" value={payment} onChange={e => setPayment(e.target.value)}>
-                {payments.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <Select value={payment} onChange={setPayment} options={payments} />
             )}
           </div>
           <div>
@@ -250,9 +247,7 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
             {sources.length === 0 ? (
               <p className="text-xs text-negative bg-negative/10 border border-negative/20 rounded-xl px-3 py-2.5">Configura tus opciones en Configuración</p>
             ) : (
-              <select className="neta-input" value={source} onChange={e => setSource(e.target.value)}>
-                {sources.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <Select value={source} onChange={setSource} options={sources} />
             )}
           </div>
         </div>
