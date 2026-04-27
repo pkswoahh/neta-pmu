@@ -35,7 +35,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 - [x] ~~Recuperación de contraseña~~
 - [x] ~~Modal de confirmación bonito~~
-- [ ] **Confirmación de email en producción** — activar y manejar el flow
+- [ ] **Confirmación de email en producción** — el código ya está listo (pantalla 📬 + errores en español). Solo activar el toggle "Confirm email" en Supabase → Sign In / Providers cuando salga el dominio propio.
 - [ ] **Pasarela de pago (Stripe o MercadoPago)** — suscripción $15 USD/mes
 - [ ] **Trial de 14 días** — gating por `subscription_status`
 - [ ] **Términos y Política de Privacidad** — drafts y página legal
