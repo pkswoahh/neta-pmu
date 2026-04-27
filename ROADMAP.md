@@ -45,14 +45,14 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 ## ⭐ Importantes (UX y diferenciación)
 
-- [ ] **Búsqueda en Procedimientos y Gastos** — por nombre de cliente / descripción (Clientes ya tiene búsqueda)
-- [ ] **Filtros avanzados** — rango de fechas custom (no solo mes), por procedimiento, por categoría
+- [x] ~~Búsqueda en Procedimientos y Gastos~~
+- [x] ~~Filtros por tipo/categoría en Procedimientos y Gastos~~
 - [x] ~~Vista de cliente / historial~~
 - [x] ~~PWA instalable~~
-- [ ] **Comparación con mes anterior** en Dashboard ("Llevas 23% más que en marzo")
+- [x] ~~Comparación con mes anterior en Dashboard (% vs mes anterior en cada card)~~
 - [x] ~~Skeletons de carga~~
 - [x] ~~Fechas relativas~~
-- [ ] **Exportar a Excel/CSV** — procedimientos y gastos del mes / rango
+- [x] ~~Exportar a CSV (Procedimientos y Gastos)~~
 - [ ] **Validación al borrar opciones de Configuración** — advertir si tienen registros asociados
 - [ ] **Mensajes de error de Supabase traducidos al español**
 

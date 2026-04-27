@@ -6,7 +6,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import MonthSelector from '@/components/MonthSelector'
 import MoneyInput from '@/components/MoneyInput'
 import { DashboardSkeleton } from '@/components/Skeleton'
-import { currentMonth, formatMoney, monthRange } from '@/lib/utils'
+import { clientKey, currentMonth, formatMoney, monthLabel, monthRange, shiftMonth } from '@/lib/utils'
 import type { Expense, Procedure } from '@/types/database'
 
 export default function Dashboard() {
@@ -16,10 +16,10 @@ export default function Dashboard() {
   const [month, setMonth] = useState(currentMonth())
   const [procs, setProcs] = useState<Procedure[]>([])
   const [exps, setExps] = useState<Expense[]>([])
+  const [prevProcs, setPrevProcs] = useState<Procedure[]>([])
+  const [prevExps, setPrevExps] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
-
-  // recurring/new client logic: a "new" client is one whose first procedure is in this month.
-  const [historyNames, setHistoryNames] = useState<Map<string, string>>(new Map()) // name -> earliest date
+  const [historyNames, setHistoryNames] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     if (!user) return
@@ -27,15 +27,20 @@ export default function Dashboard() {
     ;(async () => {
       setLoading(true)
       const { start, end } = monthRange(month)
-      const [{ data: pData }, { data: eData }, { data: allProcs }] = await Promise.all([
+      const prevMonth = shiftMonth(month, -1)
+      const { start: pStart, end: pEnd } = monthRange(prevMonth)
+
+      const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }] = await Promise.all([
         supabase.from('procedures').select('*').eq('user_id', user.id).gte('date', start).lt('date', end).order('date', { ascending: false }),
         supabase.from('expenses').select('*').eq('user_id', user.id).gte('date', start).lt('date', end),
+        supabase.from('procedures').select('amount,date').eq('user_id', user.id).gte('date', pStart).lt('date', pEnd),
+        supabase.from('expenses').select('amount').eq('user_id', user.id).gte('date', pStart).lt('date', pEnd),
         supabase.from('procedures').select('client_name,date').eq('user_id', user.id).lt('date', end),
       ])
       if (cancelled) return
       const map = new Map<string, string>()
       ;(allProcs ?? []).forEach((row: any) => {
-        const key = (row.client_name ?? '').trim().toLowerCase()
+        const key = clientKey(row.client_name ?? '')
         if (!key) return
         const prev = map.get(key)
         if (!prev || row.date < prev) map.set(key, row.date)
@@ -43,6 +48,8 @@ export default function Dashboard() {
       setHistoryNames(map)
       setProcs((pData ?? []) as Procedure[])
       setExps((eData ?? []) as Expense[])
+      setPrevProcs((ppData ?? []) as any[])
+      setPrevExps((peData ?? []) as any[])
       setLoading(false)
     })()
     return () => { cancelled = true }
@@ -56,12 +63,15 @@ export default function Dashboard() {
     const expenseTotal = exps.reduce((s, g) => s + Number(g.amount), 0)
     const profit = income - expenseTotal
     const { start } = monthRange(month)
+    const prevIncome = prevProcs.reduce((s, p) => s + Number(p.amount), 0)
+    const prevExpenseTotal = prevExps.reduce((s, g) => s + Number(g.amount), 0)
+    const prevProfit = prevIncome - prevExpenseTotal
 
     let newClients = 0
     let recurring = 0
     const seenThisMonth = new Set<string>()
     procs.forEach(p => {
-      const key = (p.client_name ?? '').trim().toLowerCase()
+      const key = clientKey(p.client_name)
       if (!key || seenThisMonth.has(key)) return
       seenThisMonth.add(key)
       const earliest = historyNames.get(key)
@@ -69,8 +79,11 @@ export default function Dashboard() {
       else recurring += 1
     })
 
-    return { income, expenseTotal, profit, newClients, recurring }
-  }, [procs, exps, historyNames, month])
+    return {
+      income, expenseTotal, profit, newClients, recurring,
+      prevIncome, prevExpenseTotal, prevProfit, prevCount: prevProcs.length,
+    }
+  }, [procs, exps, prevProcs, prevExps, historyNames, month])
 
   const goalPct = goal > 0 ? Math.min(999, Math.round((stats.income / goal) * 100)) : 0
   const goalReached = goal > 0 && stats.income >= goal
@@ -83,13 +96,10 @@ export default function Dashboard() {
 
   const [editingGoal, setEditingGoal] = useState(false)
   const [draftGoal, setDraftGoal] = useState<number>(goal)
-
   useEffect(() => { setDraftGoal(goal) }, [goal])
+  async function saveGoal() { await updateProfile({ monthly_goal: draftGoal }); setEditingGoal(false) }
 
-  async function saveGoal() {
-    await updateProfile({ monthly_goal: draftGoal })
-    setEditingGoal(false)
-  }
+  const prevLabel = monthLabel(shiftMonth(month, -1))
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -102,32 +112,21 @@ export default function Dashboard() {
         </div>
         <MonthSelector value={month} onChange={setMonth} />
       </div>
-      <div className="md:hidden">
-        <MonthSelector value={month} onChange={setMonth} />
-      </div>
+      <div className="md:hidden"><MonthSelector value={month} onChange={setMonth} /></div>
 
-      {loading ? (
-        <DashboardSkeleton />
-      ) : (
+      {loading ? <DashboardSkeleton /> : (
         <>
           {/* Meta mensual */}
           <div className="neta-card relative overflow-hidden">
             <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
             <div className="flex items-center justify-between mb-3 relative">
-              <div className="flex items-center gap-2 text-muted text-sm">
-                <Target size={16} />
-                Meta mensual
-              </div>
-              {!editingGoal ? (
-                <button onClick={() => setEditingGoal(true)} className="text-muted hover:text-primary p-1 rounded-lg" aria-label="Editar meta">
-                  <Edit2 size={14} />
-                </button>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <button onClick={saveGoal} className="text-positive p-1 hover:bg-positive/10 rounded-lg"><Check size={14} /></button>
-                  <button onClick={() => { setEditingGoal(false); setDraftGoal(goal) }} className="text-muted p-1 hover:bg-surface rounded-lg"><X size={14} /></button>
-                </div>
-              )}
+              <div className="flex items-center gap-2 text-muted text-sm"><Target size={16} /> Meta mensual</div>
+              {!editingGoal
+                ? <button onClick={() => setEditingGoal(true)} className="text-muted hover:text-primary p-1 rounded-lg"><Edit2 size={14} /></button>
+                : <div className="flex items-center gap-1">
+                    <button onClick={saveGoal} className="text-positive p-1 hover:bg-positive/10 rounded-lg"><Check size={14} /></button>
+                    <button onClick={() => { setEditingGoal(false); setDraftGoal(goal) }} className="text-muted p-1 hover:bg-surface rounded-lg"><X size={14} /></button>
+                  </div>}
             </div>
             {editingGoal ? (
               <MoneyInput value={draftGoal} onChange={setDraftGoal} currency={currency} />
@@ -139,13 +138,7 @@ export default function Dashboard() {
                   Llevas <span className="font-semibold">{formatMoney(stats.income, currency)}</span> de <span className="text-muted">{formatMoney(goal, currency)}</span> — <span className={goalReached ? 'text-positive font-semibold' : 'text-accent font-semibold'}>{goalPct}%</span>
                 </p>
                 <div className="mt-4 h-2.5 bg-bg rounded-full overflow-hidden">
-                  <div
-                    className="h-full transition-all duration-500"
-                    style={{
-                      width: `${barWidth}%`,
-                      background: goalReached ? '#6EE7B7' : '#E8A598',
-                    }}
-                  />
+                  <div className="h-full transition-all duration-500" style={{ width: `${barWidth}%`, background: goalReached ? '#6EE7B7' : '#E8A598' }} />
                 </div>
                 {goalReached && <p className="text-positive text-xs mt-2">¡Meta superada! Vas {goalPct - 100}% por encima.</p>}
               </>
@@ -158,54 +151,79 @@ export default function Dashboard() {
               label="Ingresos"
               value={formatMoney(stats.income, currency)}
               icon={<TrendingUp size={16} className="text-positive" />}
+              prev={stats.prevIncome}
+              current={stats.income}
+              prevLabel={prevLabel}
             />
             <SummaryCard
               label="Gastos"
               value={formatMoney(stats.expenseTotal, currency)}
               icon={<TrendingDown size={16} className="text-negative" />}
+              prev={stats.prevExpenseTotal}
+              current={stats.expenseTotal}
+              prevLabel={prevLabel}
+              invertDelta
             />
             <SummaryCard
               label="Ganancia neta"
               value={formatMoney(stats.profit, currency)}
               valueClass={stats.profit >= 0 ? 'text-positive' : 'text-negative'}
-              icon={<span className={stats.profit >= 0 ? 'text-positive' : 'text-negative'}>=</span>}
+              prev={stats.prevProfit}
+              current={stats.profit}
+              prevLabel={prevLabel}
             />
             <SummaryCard
               label="Procedimientos"
               value={String(procs.length)}
               icon={<ClipboardList size={16} className="text-accent" />}
               hint={`${stats.newClients} nuevos · ${stats.recurring} frecuentes`}
+              prev={stats.prevCount}
+              current={procs.length}
+              prevLabel={prevLabel}
+              isCount
             />
           </div>
 
-          <BreakdownCard title="Clientes por origen" items={sourceBreakdown} totalLabel="clientes" colorBar />
-          <BreakdownCard title="Procedimientos por tipo" items={procBreakdown} totalLabel="servicios" />
-          <BreakdownCard title="Ingresos por método de pago" items={paymentBreakdown} totalLabel="ingresos" valueAsMoney currency={currency} />
-          <BreakdownCard title="Egresos por categoría" items={expenseBreakdown} totalLabel="egresos" valueAsMoney currency={currency} negative />
+          <BreakdownCard title="Clientes por origen" items={sourceBreakdown} colorBar />
+          <BreakdownCard title="Procedimientos por tipo" items={procBreakdown} />
+          <BreakdownCard title="Ingresos por método de pago" items={paymentBreakdown} valueAsMoney currency={currency} />
+          <BreakdownCard title="Egresos por categoría" items={expenseBreakdown} valueAsMoney currency={currency} negative />
         </>
       )}
     </div>
   )
 }
 
-function SummaryCard({ label, value, icon, valueClass, hint }: { label: string; value: string; icon?: React.ReactNode; valueClass?: string; hint?: string }) {
+function delta(current: number, prev: number, invert = false): { pct: number; up: boolean } | null {
+  if (prev === 0) return null
+  const pct = Math.round(((current - prev) / Math.abs(prev)) * 100)
+  const up = invert ? pct <= 0 : pct >= 0
+  return { pct, up }
+}
+
+function SummaryCard({
+  label, value, icon, valueClass, hint,
+  prev, current, prevLabel, invertDelta, isCount,
+}: {
+  label: string; value: string; icon?: React.ReactNode; valueClass?: string; hint?: string
+  prev?: number; current?: number; prevLabel?: string; invertDelta?: boolean; isCount?: boolean
+}) {
+  const d = prev !== undefined && current !== undefined ? delta(current, prev, invertDelta) : null
   return (
     <div className="neta-card !p-4">
-      <div className="flex items-center gap-1.5 text-xs text-muted mb-2">
-        {icon}
-        {label}
-      </div>
+      <div className="flex items-center gap-1.5 text-xs text-muted mb-2">{icon}{label}</div>
       <div className={`text-lg md:text-2xl font-semibold leading-tight ${valueClass ?? ''}`}>{value}</div>
       {hint && <div className="text-[11px] text-muted mt-1">{hint}</div>}
+      {d !== null && (
+        <div className={`text-[11px] mt-1.5 font-medium ${d.up ? 'text-positive' : 'text-negative'}`}>
+          {d.pct >= 0 ? '+' : ''}{d.pct}% vs {prevLabel}
+        </div>
+      )}
     </div>
   )
 }
 
-interface BreakdownItem {
-  label: string
-  count: number
-  value: number
-}
+interface BreakdownItem { label: string; count: number; value: number }
 
 function breakdownBy<T extends { amount?: number }>(rows: T[], keyFn: (r: T) => string): BreakdownItem[] {
   const map = new Map<string, BreakdownItem>()
@@ -219,22 +237,8 @@ function breakdownBy<T extends { amount?: number }>(rows: T[], keyFn: (r: T) => 
   return [...map.values()].sort((a, b) => b.value - a.value || b.count - a.count)
 }
 
-function BreakdownCard({
-  title,
-  items,
-  totalLabel,
-  valueAsMoney,
-  currency,
-  colorBar,
-  negative,
-}: {
-  title: string
-  items: BreakdownItem[]
-  totalLabel: string
-  valueAsMoney?: boolean
-  currency?: string
-  colorBar?: boolean
-  negative?: boolean
+function BreakdownCard({ title, items, valueAsMoney, currency, colorBar, negative }: {
+  title: string; items: BreakdownItem[]; valueAsMoney?: boolean; currency?: string; colorBar?: boolean; negative?: boolean
 }) {
   const total = items.reduce((s, i) => s + (valueAsMoney ? i.value : i.count), 0)
   return (
@@ -252,20 +256,12 @@ function BreakdownCard({
                 <div className="flex items-baseline justify-between gap-3 mb-1.5">
                   <span className="text-sm truncate flex-1">{item.label}</span>
                   <span className="text-sm font-medium tabular-nums">
-                    {valueAsMoney
-                      ? `${negative ? '-' : ''}${formatMoney(item.value, currency ?? 'COP')}`
-                      : `${item.count}`}
+                    {valueAsMoney ? `${negative ? '-' : ''}${formatMoney(item.value, currency ?? 'COP')}` : `${item.count}`}
                   </span>
                   <span className="text-xs text-muted w-10 text-right tabular-nums">{pct}%</span>
                 </div>
                 <div className="h-1.5 bg-bg rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${pct}%`,
-                      background: colorBar ? '#D4A96A' : negative ? '#FDA4AF' : '#E8A598',
-                    }}
-                  />
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: colorBar ? '#D4A96A' : negative ? '#FDA4AF' : '#E8A598' }} />
                 </div>
               </li>
             )
