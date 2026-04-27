@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: #0F0F0F;
+  color: #FFFFFF;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #2A2A2A;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover { background: #3A3A3A; }
+
+@layer components {
+  .neta-card {
+    @apply bg-surface border border-border rounded-2xl p-5;
+  }
+  .neta-input {
+    @apply w-full bg-bg border border-border rounded-xl px-4 py-3 text-primary placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors;
+  }
+  .neta-label {
+    @apply block text-sm text-muted mb-2;
+  }
+  .neta-btn-primary {
+    @apply bg-accent text-bg font-semibold rounded-xl px-5 py-3 hover:opacity-90 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .neta-btn-ghost {
+    @apply bg-transparent border border-border text-primary rounded-xl px-5 py-3 hover:bg-surface transition;
+  }
+  .neta-btn-danger {
+    @apply text-negative hover:bg-negative/10 transition rounded-lg px-3 py-2;
+  }
+}
+
+.neta-logo-dot {
+  color: #E8A598;
+}
+
+@media (max-width: 768px) {
+  .has-bottom-nav {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}
