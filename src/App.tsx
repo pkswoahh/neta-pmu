@@ -18,6 +18,8 @@ import Gastos from '@/pages/Gastos'
 import Configuracion from '@/pages/Configuracion'
 import AdminOverviewPage from '@/pages/admin/Overview'
 import AdminUsuarias from '@/pages/admin/Usuarias'
+import UsuariaDetalle from '@/pages/admin/UsuariaDetalle'
+import Auditoria from '@/pages/admin/Auditoria'
 
 export default function App() {
   return (
@@ -37,7 +39,8 @@ export default function App() {
               <Route element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
                 <Route path="/admin" element={<AdminOverviewPage />} />
                 <Route path="/admin/usuarias" element={<AdminUsuarias />} />
-                <Route path="/admin/auditoria" element={<AuditoriaPlaceholder />} />
+                <Route path="/admin/usuarias/:id" element={<UsuariaDetalle />} />
+                <Route path="/admin/auditoria" element={<Auditoria />} />
               </Route>
 
               <Route element={<RequireAuthAndOnboarded><AppLayout /></RequireAuthAndOnboarded>}>
@@ -89,18 +92,3 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function AuditoriaPlaceholder() {
-  return (
-    <div className="space-y-4 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Auditoría</h1>
-        <p className="text-muted mt-2">Registro de acciones del admin.</p>
-      </div>
-      <div className="neta-card text-center py-12">
-        <div className="text-4xl mb-3">📋</div>
-        <p className="text-primary font-medium mb-1">Llega en la sesión 2</p>
-        <p className="text-sm text-muted">Cuando implementemos las acciones (comp, suspender, etc.) cada una quedará registrada aquí con quién, qué, cuándo y por qué.</p>
-      </div>
-    </div>
-  )
-}

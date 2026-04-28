@@ -88,3 +88,36 @@ export interface AdminOverview {
   trial_ending_soon: number
   inactive_30d: number
 }
+
+export interface AdminUserRow extends Profile {
+  email: string | null
+}
+
+export interface AdminUserStats {
+  total_procedures: number
+  total_expenses: number
+  income_last_30d: number
+  expenses_last_30d: number
+  income_total: number
+  last_procedure: string | null
+  first_procedure: string | null
+  unique_clients: number
+}
+
+export interface AdminUserDetail {
+  profile: Profile & { email: string | null }
+  stats: AdminUserStats
+}
+
+export interface AdminAuditEntry {
+  id: string
+  admin_id: string
+  admin_email: string | null
+  admin_name: string | null
+  target_user_id: string | null
+  target_name: string | null
+  action: string
+  details: Record<string, unknown>
+  reason: string | null
+  created_at: string
+}

@@ -154,15 +154,40 @@ Cuando `access.allowed === true` pero hay warning:
 - [x] Onboarding: auto-derivar `country` de `currency`
 - [x] Link "Panel admin" en sidebar principal solo si `role === 'admin'`
 
-**Limitación conocida:** La lista de usuarias muestra `business_name` pero no `email`. Para acceder al email hay que pasar por una RPC dedicada (las tablas `auth.users` no son SELECTeables desde el cliente). Se resuelve en sesión 2 junto con el detalle de usuaria.
+### Sesión 2 — Profundidad ✅ COMPLETA
 
-### Sesión 2 — Profundidad
+- [x] Migración 003: RPCs de admin (list, detail, audit, acciones)
+- [x] Roberto corre la migración 003 en Supabase
+- [x] `/admin/usuarias/:id` detalle con stats de uso, timeline de suscripción y datos completos
+- [x] RPCs Postgres para acciones (no Edge Functions — más simples y suficientes con RLS):
+  - `admin_suspend_user(target, reason)` — razón obligatoria
+  - `admin_unsuspend_user(target, reason?)` — restaura estado según fechas
+  - `admin_comp_user(target, until?, reason?)` — cortesía con/sin expiración
+  - `admin_remove_comp(target, reason?)` — restaura estado lógico
+  - `admin_extend_trial(target, days, reason?)` — suma días
+  - `admin_set_role(target, new_role, reason?)` — cambia role (futuro)
+- [x] Modales por acción con validación (razón obligatoria en suspend)
+- [x] Acción "Enviar reset de contraseña" via API pública de Supabase
+- [x] `/admin/auditoria` con timeline filtrable por acción y búsqueda
+- [x] Lista de usuarias muestra email vía RPC `admin_list_users()`
+- [x] Click en fila de auditoría navega al detalle de la usuaria afectada
 
-- [ ] `/admin/usuarias/:id` detalle
-- [ ] Edge functions para acciones (comp, suspend, extend, etc.)
-- [ ] Audit log con timeline
-- [ ] Acción "extender trial" en bulk
-- [ ] Email notifications para admin (opcional, vía Supabase trigger → resend/sendgrid)
+### ⏳ Pendiente futuro (no urgente)
+
+- [ ] **Eliminar usuaria definitivamente** — requiere `auth.admin.deleteUser()` con service_role. Hay que crear Edge Function. Por ahora soft-delete via "suspendida" cumple el objetivo.
+- [ ] **Email notifications** al admin (nuevos signups, cancelaciones, pagos fallidos) — se ata cuando integremos email service junto con Stripe.
+- [ ] **Acciones bulk** — extender trial / dar comp a varias en batch desde la lista.
+
+### Cómo retomar
+
+1. Verifica que migraciones 002 y 003 estén corridas:
+   ```sql
+   select count(*) from pg_proc
+   where proname in ('admin_overview', 'admin_list_users', 'admin_suspend_user');
+   -- debe devolver 3
+   ```
+2. Las acciones se llaman como `supabase.rpc('admin_suspend_user', { target, reason_text })`.
+3. Cualquier acción nueva: RPC en migración 00X + modal en `ActionModals.tsx` + botón en `UsuariaDetalle.tsx`.
 
 ## Decisiones tomadas
 

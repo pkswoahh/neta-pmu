@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-28 (sesión 2)
+Última actualización: 2026-04-28 (sesión 2 admin completa)
 
 ---
 
@@ -90,13 +90,22 @@ Diseño completo en `docs/ADMIN.md`.
 - [x] `/admin/usuarias` lista con tabs, búsqueda y exportar CSV
 - [x] Country auto-derivado en onboarding
 
-### ⏳ Sesión 2 — Profundidad (PENDIENTE)
+### ✅ Sesión 2 — Profundidad (HECHO)
 
-- [ ] `/admin/usuarias/:id` detalle con stats de uso
-- [ ] Edge Functions para acciones (comp, suspend, extend trial, reactivar, eliminar)
-- [ ] Audit log con timeline filtrable
-- [ ] Email visible en la lista (vía RPC dedicada)
-- [ ] Email notifications opcionales para admin (signup, cancelación, fallo de pago)
+- [x] Migración 003: RPCs de admin (list, detail, audit, acciones)
+- [x] `/admin/usuarias/:id` detalle con stats de uso y timeline de suscripción
+- [x] RPCs Postgres para acciones: suspend, unsuspend, comp, remove_comp, extend_trial, set_role
+- [x] Modales por acción con validación (razón obligatoria en suspend)
+- [x] Acción "Enviar reset de contraseña" via API pública de Supabase
+- [x] Audit log con timeline filtrable por acción y búsqueda
+- [x] Email visible en la lista (vía RPC `admin_list_users()`)
+- [x] Click en fila de auditoría navega al detalle de la usuaria afectada
+
+### ⏳ Pendiente futuro (no urgente)
+
+- [ ] Eliminar usuaria definitivamente (requiere Edge Function con service_role)
+- [ ] Email notifications al admin (signup, cancelación, fallo de pago) — junto con email service de Stripe
+- [ ] Acciones bulk (extender trial / dar comp a varias en batch)
 
 ---
 
