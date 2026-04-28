@@ -1,9 +1,9 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
-import { cn } from '@/lib/utils'
+import { cn, shortDate } from '@/lib/utils'
 
 const tabs = [
   { to: '/', label: 'Dashboard', shortLabel: 'Inicio', icon: LayoutDashboard, end: true },
@@ -15,9 +15,10 @@ const tabs = [
 
 export default function AppLayout() {
   const { signOut, user } = useAuth()
-  const { profile } = useProfile()
+  const { profile, access } = useProfile()
   const loc = useLocation()
   const currentTitle = tabs.find(t => (t.end ? loc.pathname === t.to : loc.pathname.startsWith(t.to)))?.label ?? ''
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'support'
 
   return (
     <div className="min-h-dvh relative z-10 flex">
@@ -43,6 +44,20 @@ export default function AppLayout() {
               {t.label}
             </NavLink>
           ))}
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                cn(
+                  'mt-3 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition border border-gold/20',
+                  isActive ? 'bg-gold/10 text-gold' : 'text-gold/80 hover:text-gold hover:bg-gold/5',
+                )
+              }
+            >
+              <Shield size={18} />
+              Panel admin
+            </NavLink>
+          )}
         </nav>
         <div className="mt-auto border-t border-border pt-5">
           <div className="px-3 mb-3 text-xs">
@@ -67,14 +82,23 @@ export default function AppLayout() {
         <header className="md:hidden sticky top-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border">
           <div className="px-5 py-4 flex items-center justify-between">
             <Logo size="md" />
-            <button onClick={signOut} className="text-muted hover:text-primary p-2 -mr-2" aria-label="Cerrar sesión">
-              <LogOut size={18} />
-            </button>
+            <div className="flex items-center gap-1">
+              {isAdmin && (
+                <NavLink to="/admin" className="text-gold p-2 -mr-1" aria-label="Panel admin">
+                  <Shield size={18} />
+                </NavLink>
+              )}
+              <button onClick={signOut} className="text-muted hover:text-primary p-2 -mr-2" aria-label="Cerrar sesión">
+                <LogOut size={18} />
+              </button>
+            </div>
           </div>
           {currentTitle && (
             <div className="px-5 pb-3 text-xs uppercase tracking-wider text-muted">{currentTitle}</div>
           )}
         </header>
+
+        <AccessBanner />
 
         <div className="px-5 md:px-10 py-6 md:py-10 max-w-5xl mx-auto">
           <Outlet />
@@ -104,4 +128,37 @@ export default function AppLayout() {
       </nav>
     </div>
   )
+}
+
+function AccessBanner() {
+  const { access } = useProfile()
+
+  if (access.warning === 'trial_ending') {
+    return (
+      <div className="bg-accent/10 border-b border-accent/20 px-5 md:px-10 py-2.5 text-sm flex items-center gap-2 text-accent">
+        <Clock size={14} />
+        <span>
+          Tu trial termina en {access.daysLeft} {access.daysLeft === 1 ? 'día' : 'días'}.
+          {access.endsAt && <> Vence el {shortDate(access.endsAt.slice(0, 10))}.</>}
+        </span>
+      </div>
+    )
+  }
+  if (access.warning === 'past_due') {
+    return (
+      <div className="bg-amber-400/10 border-b border-amber-400/20 px-5 md:px-10 py-2.5 text-sm flex items-center gap-2 text-amber-300">
+        <AlertTriangle size={14} />
+        <span>Tu último pago falló. Actualiza tu método antes de perder acceso.</span>
+      </div>
+    )
+  }
+  if (access.warning === 'canceled' && access.endsAt) {
+    return (
+      <div className="bg-muted/10 border-b border-border px-5 md:px-10 py-2.5 text-sm flex items-center gap-2 text-muted">
+        <Clock size={14} />
+        <span>Tu suscripción está cancelada. Tendrás acceso hasta el {shortDate(access.endsAt.slice(0, 10))}.</span>
+      </div>
+    )
+  }
+  return null
 }

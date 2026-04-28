@@ -4,6 +4,7 @@ import Logo from '@/components/Logo'
 import Select from '@/components/Select'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
+import { CURRENCY_TO_COUNTRY } from '@/lib/constants'
 import { Loader2, ArrowRight } from 'lucide-react'
 
 const CURRENCIES = [
@@ -31,7 +32,11 @@ export default function Onboarding() {
     if (!name.trim()) return
     setBusy(true)
     try {
-      await updateProfile({ business_name: name.trim(), currency })
+      await updateProfile({
+        business_name: name.trim(),
+        currency,
+        country: CURRENCY_TO_COUNTRY[currency] ?? null,
+      })
       toast.show('Listo. Configura tus opciones cuando quieras', 'success')
       nav('/configuracion', { replace: true })
     } catch (e: any) {

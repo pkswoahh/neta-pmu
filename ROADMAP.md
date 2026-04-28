@@ -72,19 +72,31 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 ---
 
-## 🛠️ Módulo Admin (para Roberto)
+## 🛠️ Módulo Admin
 
-> Roberto va a contar los detalles que tiene en mente. Lo desarrollamos en fase separada,
-> idealmente acoplado con la integración de Stripe (los webhooks alimentan los flags).
+Diseño completo en `docs/ADMIN.md`.
 
-- [ ] Sub-app o ruta `/admin` protegida con flag `is_admin` en `profiles`
-- [ ] Lista de usuarios registrados con búsqueda y filtros
-- [ ] Métricas: total usuarios, activos último mes, churn, MRR
-- [ ] Estado de suscripción por usuario (trial / activo / vencido / cancelado)
-- [ ] Acción de bloquear/suspender cuenta
-- [ ] Última actividad de cada usuario (días sin entrar)
-- [ ] Detalles a definir con Roberto:
-  - [ ] (pendiente conversación)
+### ✅ Sesión 1 — Fundamentos (HECHO)
+
+- [x] Migración SQL: columnas, audit log, RLS, funciones, trigger actualizado
+- [x] State machine de suscripción (trial/active/past_due/canceled/expired/comped/suspended)
+- [x] `computeAccess()` derivado del perfil
+- [x] Tracking de `last_seen_at`
+- [x] Pantallas de gating: `/suscripcion-vencida` y `/cuenta-suspendida`
+- [x] Banners trial-ending / past_due / canceled en AppLayout
+- [x] `<RequireAdmin>` guard
+- [x] AdminLayout con sidebar (Overview, Usuarias, Auditoría)
+- [x] `/admin` Overview con MRR, métricas y mini-gráfico
+- [x] `/admin/usuarias` lista con tabs, búsqueda y exportar CSV
+- [x] Country auto-derivado en onboarding
+
+### ⏳ Sesión 2 — Profundidad (PENDIENTE)
+
+- [ ] `/admin/usuarias/:id` detalle con stats de uso
+- [ ] Edge Functions para acciones (comp, suspend, extend trial, reactivar, eliminar)
+- [ ] Audit log con timeline filtrable
+- [ ] Email visible en la lista (vía RPC dedicada)
+- [ ] Email notifications opcionales para admin (signup, cancelación, fallo de pago)
 
 ---
 

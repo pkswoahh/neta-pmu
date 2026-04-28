@@ -138,21 +138,23 @@ Cuando `access.allowed === true` pero hay warning:
 
 ## Plan de implementación
 
-### Sesión 1 — Fundamentos (en progreso)
+### Sesión 1 — Fundamentos ✅ COMPLETA
 
 - [x] Migración SQL: columnas, audit log, RLS, funciones
-- [ ] Roberto corre la migración en Supabase
-- [ ] Tipos TS actualizados (`Profile` extendido)
-- [ ] `src/lib/access.ts` con `computeAccess()`
-- [ ] `ProfileContext` calcula access derivado + llama `update_last_seen()`
-- [ ] Pantallas `/suscripcion-vencida` y `/cuenta-suspendida`
-- [ ] Banners en `AppLayout` para trial_ending / past_due
-- [ ] `<RequireAdmin>` guard
-- [ ] `AdminLayout` con sidebar (Overview, Usuarias, Auditoría)
-- [ ] `/admin` Overview con métricas
-- [ ] `/admin/usuarias` lista + tabs + búsqueda + CSV
-- [ ] Onboarding: auto-derivar `country` de `currency`
-- [ ] Link "Admin" en sidebar principal solo si `role === 'admin'`
+- [x] Roberto corrió la migración en Supabase
+- [x] Tipos TS actualizados (`Profile` extendido)
+- [x] `src/lib/access.ts` con `computeAccess()`
+- [x] `ProfileContext` calcula access derivado + llama `update_last_seen()`
+- [x] Pantallas `/suscripcion-vencida` y `/cuenta-suspendida`
+- [x] Banners en `AppLayout` para trial_ending / past_due / canceled
+- [x] `<RequireAdmin>` guard
+- [x] `AdminLayout` con sidebar (Overview, Usuarias, Auditoría)
+- [x] `/admin` Overview con métricas y mini-gráfico de signups
+- [x] `/admin/usuarias` lista + tabs + búsqueda + CSV
+- [x] Onboarding: auto-derivar `country` de `currency`
+- [x] Link "Panel admin" en sidebar principal solo si `role === 'admin'`
+
+**Limitación conocida:** La lista de usuarias muestra `business_name` pero no `email`. Para acceder al email hay que pasar por una RPC dedicada (las tablas `auth.users` no son SELECTeables desde el cliente). Se resuelve en sesión 2 junto con el detalle de usuaria.
 
 ### Sesión 2 — Profundidad
 

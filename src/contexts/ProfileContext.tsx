@@ -1,12 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Profile, UserOption, OptionType } from '@/types/database'
+import { computeAccess, type Access } from '@/lib/access'
 import { useAuth } from './AuthContext'
 
 interface ProfileCtx {
   profile: Profile | null
   options: UserOption[]
   loading: boolean
+  access: Access
   refresh: () => Promise<void>
   updateProfile: (patch: Partial<Profile>) => Promise<void>
   byType: (t: OptionType) => UserOption[]
@@ -19,6 +21,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [options, setOptions] = useState<UserOption[]>([])
   const [loading, setLoading] = useState(true)
+  const lastSeenSentRef = useRef<string | null>(null)
 
   const refresh = useCallback(async () => {
     if (!user) {
@@ -35,8 +38,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     if (p) {
       setProfile(p as Profile)
     } else {
-      // El trigger debería haber creado el perfil; si no, lo creamos ahora.
-      const { data: created } = await supabase.from('profiles').insert({ id: user.id, currency: 'COP', monthly_goal: 0 }).select().maybeSingle()
+      const { data: created } = await supabase
+        .from('profiles')
+        .insert({ id: user.id, currency: 'COP', monthly_goal: 0 })
+        .select()
+        .maybeSingle()
       setProfile((created as Profile) ?? null)
     }
     setOptions((o ?? []) as UserOption[])
@@ -44,6 +50,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   useEffect(() => { void refresh() }, [refresh])
+
+  // Actualiza last_seen_at una vez por sesión (al detectar usuario por primera vez).
+  useEffect(() => {
+    if (!user) return
+    if (lastSeenSentRef.current === user.id) return
+    lastSeenSentRef.current = user.id
+    void supabase.rpc('update_last_seen')
+  }, [user])
 
   async function updateProfile(patch: Partial<Profile>) {
     if (!user) return
@@ -55,8 +69,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     return options.filter(o => o.type === t).sort((a, b) => a.order - b.order)
   }
 
+  const access = useMemo(() => computeAccess(profile), [profile])
+
   return (
-    <Ctx.Provider value={{ profile, options, loading, refresh, updateProfile, byType }}>
+    <Ctx.Provider value={{ profile, options, loading, access, refresh, updateProfile, byType }}>
       {children}
     </Ctx.Provider>
   )
