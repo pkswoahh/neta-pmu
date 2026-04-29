@@ -22,6 +22,7 @@ import UsuariaDetalle from '@/pages/admin/UsuariaDetalle'
 import Auditoria from '@/pages/admin/Auditoria'
 import Terminos from '@/pages/Terminos'
 import Privacidad from '@/pages/Privacidad'
+import Suscribirse from '@/pages/Suscribirse'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
               <Route path="/privacidad" element={<Privacidad />} />
               <Route path="/bienvenida" element={<RequireAuth><Onboarding /></RequireAuth>} />
 
+              <Route path="/suscribirse" element={<RequireAuth><Suscribirse /></RequireAuth>} />
               <Route path="/suscripcion-vencida" element={<RequireAuth><SuscripcionVencida /></RequireAuth>} />
               <Route path="/cuenta-suspendida" element={<RequireAuth><CuentaSuspendida /></RequireAuth>} />
 

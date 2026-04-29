@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock } from 'lucide-react'
 import Logo from './Logo'
 import { useAuth } from '@/contexts/AuthContext'
@@ -135,28 +135,41 @@ function AccessBanner() {
 
   if (access.warning === 'trial_ending') {
     return (
-      <div className="bg-accent/10 border-b border-accent/20 px-5 md:px-10 py-2.5 text-sm flex items-center gap-2 text-accent">
-        <Clock size={14} />
-        <span>
+      <div className="bg-accent/10 border-b border-accent/20 px-5 md:px-10 py-2.5 text-sm flex items-center justify-between gap-2 text-accent">
+        <span className="flex items-center gap-2">
+          <Clock size={14} />
           Tu trial termina en {access.daysLeft} {access.daysLeft === 1 ? 'día' : 'días'}.
           {access.endsAt && <> Vence el {shortDate(access.endsAt.slice(0, 10))}.</>}
         </span>
+        <Link to="/suscribirse" className="font-medium underline underline-offset-2 whitespace-nowrap shrink-0">
+          Ver planes →
+        </Link>
       </div>
     )
   }
   if (access.warning === 'past_due') {
     return (
-      <div className="bg-amber-400/10 border-b border-amber-400/20 px-5 md:px-10 py-2.5 text-sm flex items-center gap-2 text-amber-300">
-        <AlertTriangle size={14} />
-        <span>Tu último pago falló. Actualiza tu método antes de perder acceso.</span>
+      <div className="bg-amber-400/10 border-b border-amber-400/20 px-5 md:px-10 py-2.5 text-sm flex items-center justify-between gap-2 text-amber-300">
+        <span className="flex items-center gap-2">
+          <AlertTriangle size={14} />
+          Tu último pago falló. Actualiza tu método antes de perder acceso.
+        </span>
+        <Link to="/suscribirse" className="font-medium underline underline-offset-2 whitespace-nowrap shrink-0">
+          Actualizar →
+        </Link>
       </div>
     )
   }
   if (access.warning === 'canceled' && access.endsAt) {
     return (
-      <div className="bg-muted/10 border-b border-border px-5 md:px-10 py-2.5 text-sm flex items-center gap-2 text-muted">
-        <Clock size={14} />
-        <span>Tu suscripción está cancelada. Tendrás acceso hasta el {shortDate(access.endsAt.slice(0, 10))}.</span>
+      <div className="bg-muted/10 border-b border-border px-5 md:px-10 py-2.5 text-sm flex items-center justify-between gap-2 text-muted">
+        <span className="flex items-center gap-2">
+          <Clock size={14} />
+          Tu suscripción está cancelada. Tendrás acceso hasta el {shortDate(access.endsAt.slice(0, 10))}.
+        </span>
+        <Link to="/suscribirse" className="hover:text-primary font-medium underline underline-offset-2 whitespace-nowrap shrink-0">
+          Reactivar →
+        </Link>
       </div>
     )
   }

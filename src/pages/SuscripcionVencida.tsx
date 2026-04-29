@@ -1,7 +1,7 @@
-import { Mail, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Logo from '@/components/Logo'
 import { useAuth } from '@/contexts/AuthContext'
-import { SUPPORT_EMAIL } from '@/lib/constants'
 
 export default function SuscripcionVencida() {
   const { signOut } = useAuth()
@@ -16,13 +16,12 @@ export default function SuscripcionVencida() {
             Tu trial finalizó o tu suscripción venció. Reactiva tu cuenta para seguir gestionando tu negocio sin perder tus datos.
           </p>
           <div className="space-y-2">
-            <a
-              href={`mailto:${SUPPORT_EMAIL}?subject=Reactivar%20mi%20cuenta%20de%20Neta`}
-              className="neta-btn-primary w-full flex items-center justify-center gap-2"
+            <Link
+              to="/suscribirse"
+              className="neta-btn-primary w-full flex items-center justify-center"
             >
-              <Mail size={16} />
-              Escribir a soporte
-            </a>
+              Reactivar mi cuenta — $15/mes
+            </Link>
             <button
               onClick={signOut}
               className="neta-btn-ghost w-full flex items-center justify-center gap-2 text-sm"

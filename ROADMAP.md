@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-28 (términos y privacidad)
+Última actualización: 2026-04-29 (pricing page + bloqueo suscripción)
 
 ---
 
@@ -39,7 +39,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [ ] **Pasarela de pago (Stripe o MercadoPago)** — suscripción $15 USD/mes
 - [ ] **Trial de 14 días** — gating por `subscription_status`
 - [x] **Términos y Política de Privacidad** — páginas `/terminos` y `/privacidad`, links en Login (signup) y Configuración
-- [ ] **Bloqueo de acceso por suscripción vencida** — banner + redirect a billing
+- [x] **Bloqueo de acceso por suscripción vencida** — banners con CTA, `/suscribirse` pricing page, redirect desde `/suscripcion-vencida`
 
 ---
 
