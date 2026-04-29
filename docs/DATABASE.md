@@ -7,7 +7,8 @@ Postgres en Supabase. Todas las tablas con RLS activo.
 | Archivo | Estado | Descripción |
 |---|---|---|
 | `supabase/schema.sql` | ✅ Corrido en producción | Tablas base + RLS + trigger de seed |
-| `supabase/migrations/002_admin_module.sql` | ⚠️ **PENDIENTE de correr** | Columnas admin, audit log, funciones agregadas |
+| `supabase/migrations/002_admin_module.sql` | ⚠️ **PENDIENTE de correr** | Columnas admin, audit log, funciones, trigger con trial automático |
+| `supabase/migrations/003_admin_actions.sql` | ⚠️ **PENDIENTE de correr** | RPCs de admin: list, detail, audit, acciones (suspend, comp, extend_trial…) |
 
 > **Cómo correr una migración**: SQL Editor de Supabase → New query → pegar contenido → Run. Las migraciones son idempotentes (`if not exists`, `drop policy if exists ... create policy`).
 

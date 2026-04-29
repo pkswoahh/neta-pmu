@@ -40,7 +40,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     } else {
       const { data: created } = await supabase
         .from('profiles')
-        .insert({ id: user.id, currency: 'COP', monthly_goal: 0 })
+        .insert({
+          id: user.id,
+          currency: 'COP',
+          monthly_goal: 0,
+          subscription_status: 'trial',
+          trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        })
         .select()
         .maybeSingle()
       setProfile((created as Profile) ?? null)
