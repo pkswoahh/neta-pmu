@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Plus, Trash2, Edit2, Check, X, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -100,6 +101,12 @@ export default function Configuracion() {
           Guardar
         </button>
       </div>
+
+      <p className="text-center text-xs text-muted pb-2">
+        <Link to="/terminos" className="hover:text-primary transition-colors">Términos de Servicio</Link>
+        {' · '}
+        <Link to="/privacidad" className="hover:text-primary transition-colors">Política de Privacidad</Link>
+      </p>
     </div>
   )
 }

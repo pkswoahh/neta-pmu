@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import Logo from '@/components/Logo'
@@ -183,6 +183,15 @@ export default function Login() {
             <>¿Ya tienes cuenta? <button onClick={() => setMode('signin')} className="text-accent hover:underline">Entrar</button></>
           )}
         </div>
+
+        {mode === 'signup' && (
+          <p className="text-center text-xs text-muted mt-4 leading-relaxed">
+            Al crear tu cuenta aceptas nuestros{' '}
+            <Link to="/terminos" className="text-accent hover:underline">Términos de Servicio</Link>
+            {' '}y la{' '}
+            <Link to="/privacidad" className="text-accent hover:underline">Política de Privacidad</Link>.
+          </p>
+        )}
       </div>
 
       {showReset && <ResetPasswordModal initialEmail={email} onClose={() => setShowReset(false)} />}

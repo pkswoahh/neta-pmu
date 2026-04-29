@@ -20,6 +20,8 @@ import AdminOverviewPage from '@/pages/admin/Overview'
 import AdminUsuarias from '@/pages/admin/Usuarias'
 import UsuariaDetalle from '@/pages/admin/UsuariaDetalle'
 import Auditoria from '@/pages/admin/Auditoria'
+import Terminos from '@/pages/Terminos'
+import Privacidad from '@/pages/Privacidad'
 
 export default function App() {
   return (
@@ -31,6 +33,8 @@ export default function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/cambiar-password" element={<RecoverPassword />} />
+              <Route path="/terminos" element={<Terminos />} />
+              <Route path="/privacidad" element={<Privacidad />} />
               <Route path="/bienvenida" element={<RequireAuth><Onboarding /></RequireAuth>} />
 
               <Route path="/suscripcion-vencida" element={<RequireAuth><SuscripcionVencida /></RequireAuth>} />

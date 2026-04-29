@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-28 (sesión 2 admin completa)
+Última actualización: 2026-04-28 (términos y privacidad)
 
 ---
 
@@ -38,7 +38,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [ ] **Confirmación de email en producción** — el código ya está listo (pantalla 📬 + errores en español). Solo activar el toggle "Confirm email" en Supabase → Sign In / Providers cuando salga el dominio propio.
 - [ ] **Pasarela de pago (Stripe o MercadoPago)** — suscripción $15 USD/mes
 - [ ] **Trial de 14 días** — gating por `subscription_status`
-- [ ] **Términos y Política de Privacidad** — drafts y página legal
+- [x] **Términos y Política de Privacidad** — páginas `/terminos` y `/privacidad`, links en Login (signup) y Configuración
 - [ ] **Bloqueo de acceso por suscripción vencida** — banner + redirect a billing
 
 ---
