@@ -1,4 +1,5 @@
 import { CheckCircle2, LogOut } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Logo from '@/components/Logo'
 import { useAuth } from '@/contexts/AuthContext'
 import { SUPPORT_EMAIL } from '@/lib/constants'
@@ -63,6 +64,12 @@ export default function Suscribirse() {
             >
               ¿Tienes preguntas? Escríbenos
             </a>
+            <p className="text-center text-xs text-muted leading-relaxed">
+              Al suscribirte aceptas nuestros{' '}
+              <Link to="/terminos" className="text-accent hover:underline">Términos de Servicio</Link>
+              {' '}y la{' '}
+              <Link to="/privacidad" className="text-accent hover:underline">Política de Privacidad</Link>.
+            </p>
           </div>
         </div>
 
