@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Shield, Users, FileClock, ArrowLeft, LogOut, LayoutDashboard } from 'lucide-react'
+import { Shield, Users, FileClock, ArrowLeft, LogOut, LayoutDashboard, Ticket } from 'lucide-react'
 import Logo from '@/components/Logo'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const tabs = [
   { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/admin/usuarias', label: 'Usuarias', icon: Users, end: false },
+  { to: '/admin/codigos', label: 'Códigos', icon: Ticket, end: false },
   { to: '/admin/auditoria', label: 'Auditoría', icon: FileClock, end: false },
 ]
 
@@ -46,7 +47,7 @@ export default function AdminLayout() {
         </nav>
         <div className="mt-auto space-y-1">
           <NavLink
-            to="/"
+            to="/dashboard"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted hover:text-primary hover:bg-surface/60 transition"
           >
             <ArrowLeft size={18} />
@@ -71,7 +72,7 @@ export default function AdminLayout() {
         <header className="md:hidden sticky top-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border">
           <div className="px-5 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <NavLink to="/" className="text-muted hover:text-primary p-2 -ml-2" aria-label="Volver">
+              <NavLink to="/dashboard" className="text-muted hover:text-primary p-2 -ml-2" aria-label="Volver">
                 <ArrowLeft size={18} />
               </NavLink>
               <Logo size="md" />

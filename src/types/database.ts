@@ -30,6 +30,18 @@ export interface Profile {
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
   country: string | null
+  invitation_code_used: string | null
+}
+
+export interface InvitationCode {
+  id: string
+  code: string
+  max_uses: number
+  used_count: number
+  expires_at: string | null
+  notes: string | null
+  active: boolean
+  created_at: string
 }
 
 export interface UserOption {

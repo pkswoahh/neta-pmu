@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-29 (pricing page + bloqueo suscripción)
+Última actualización: 2026-04-30 (landing pública + códigos de invitación para beta cerrada)
 
 ---
 
@@ -119,7 +119,8 @@ Diseño completo en `docs/ADMIN.md`.
 - [ ] Email de soporte (Google Workspace o similar)
 - [ ] Configurar Google OAuth provider en Google Cloud Console + Supabase
 - [ ] Onboarding con datos demo de ejemplo (que vean la app llena)
-- [ ] Página de marketing / landing (puede ser dentro del mismo dominio)
+- [x] **Página de marketing / landing** — pública en `/`, app interna en `/dashboard`. Mockup inline del Dashboard, FAQ, dolores, beneficios, prueba social, animaciones al scroll.
+- [x] **Beta cerrada con código de invitación** — migración 004, RPC `validate_invitation_code` y `redeem_invitation_code`, pestaña `/admin/codigos` con CRUD. Signup pide código.
 - [ ] Analytics (Plausible / PostHog) para entender uso real
 - [ ] Sentry o similar para tracking de errores
 

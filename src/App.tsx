@@ -7,6 +7,7 @@ import Particles from '@/components/Particles'
 import AppLayout from '@/components/AppLayout'
 import AdminLayout from '@/components/admin/AdminLayout'
 import Login, { FullCenterLoader } from '@/pages/Login'
+import Landing from '@/pages/Landing'
 import Onboarding from '@/pages/Onboarding'
 import RecoverPassword from '@/pages/RecoverPassword'
 import SuscripcionVencida from '@/pages/SuscripcionVencida'
@@ -20,6 +21,7 @@ import AdminOverviewPage from '@/pages/admin/Overview'
 import AdminUsuarias from '@/pages/admin/Usuarias'
 import UsuariaDetalle from '@/pages/admin/UsuariaDetalle'
 import Auditoria from '@/pages/admin/Auditoria'
+import Codigos from '@/pages/admin/Codigos'
 import Terminos from '@/pages/Terminos'
 import Privacidad from '@/pages/Privacidad'
 import Suscribirse from '@/pages/Suscribirse'
@@ -32,6 +34,7 @@ export default function App() {
           <ProfileProvider>
             <Particles />
             <Routes>
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/cambiar-password" element={<RecoverPassword />} />
               <Route path="/terminos" element={<Terminos />} />
@@ -46,11 +49,12 @@ export default function App() {
                 <Route path="/admin" element={<AdminOverviewPage />} />
                 <Route path="/admin/usuarias" element={<AdminUsuarias />} />
                 <Route path="/admin/usuarias/:id" element={<UsuariaDetalle />} />
+                <Route path="/admin/codigos" element={<Codigos />} />
                 <Route path="/admin/auditoria" element={<Auditoria />} />
               </Route>
 
               <Route element={<RequireAuthAndOnboarded><AppLayout /></RequireAuthAndOnboarded>}>
-                <Route index element={<Dashboard />} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="procedimientos" element={<Procedimientos />} />
                 <Route path="clientes" element={<Clientes />} />
                 <Route path="gastos" element={<Gastos />} />
@@ -93,7 +97,7 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   if (aLoading || pLoading) return <FullCenterLoader />
   if (!user) return <Navigate to="/login" replace />
   if (profile?.role !== 'admin' && profile?.role !== 'support') {
-    return <Navigate to="/" replace />
+    return <Navigate to="/dashboard" replace />
   }
   return <>{children}</>
 }

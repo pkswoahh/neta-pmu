@@ -6,7 +6,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { cn, shortDate } from '@/lib/utils'
 
 const tabs = [
-  { to: '/', label: 'Dashboard', shortLabel: 'Inicio', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Dashboard', shortLabel: 'Inicio', icon: LayoutDashboard, end: true },
   { to: '/procedimientos', label: 'Procedimientos', shortLabel: 'Servicios', icon: ClipboardList, end: false },
   { to: '/clientes', label: 'Clientes', shortLabel: 'Clientes', icon: Users, end: false },
   { to: '/gastos', label: 'Gastos', shortLabel: 'Gastos', icon: Wallet, end: false },

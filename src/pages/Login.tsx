@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import Logo from '@/components/Logo'
 import Modal from '@/components/Modal'
 import { useToast } from '@/components/Toast'
-import { Mail, Lock, Loader2 } from 'lucide-react'
+import { Mail, Lock, Loader2, KeyRound } from 'lucide-react'
 
 type Mode = 'signin' | 'signup'
 
@@ -18,6 +18,14 @@ const ERROR_MAP: Record<string, string> = {
   'rate limit': 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
 }
 
+const CODE_REASON_MAP: Record<string, string> = {
+  empty: 'Ingresa tu código de acceso.',
+  not_found: 'Ese código no existe. Revísalo bien.',
+  inactive: 'Ese código ya no está activo.',
+  expired: 'Ese código venció.',
+  exhausted: 'Ese código ya fue usado el número máximo de veces.',
+}
+
 function translateError(msg: string): string {
   for (const [key, val] of Object.entries(ERROR_MAP)) {
     if (msg.toLowerCase().includes(key.toLowerCase())) return val
@@ -28,15 +36,35 @@ function translateError(msg: string): string {
 export default function Login() {
   const { user, loading } = useAuth()
   const toast = useToast()
-  const [mode, setMode] = useState<Mode>('signin')
+  const [params] = useSearchParams()
+  const initialMode: Mode = params.get('signup') === '1' ? 'signup' : 'signin'
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState(params.get('code') ?? '')
   const [busy, setBusy] = useState(false)
   const [showReset, setShowReset] = useState(false)
   const [pendingConfirm, setPendingConfirm] = useState(false)
 
+  // Si llega con ?signup=1 desde la landing, abrimos signup directo
+  useEffect(() => {
+    const wantsSignup = params.get('signup') === '1'
+    if (wantsSignup && mode !== 'signup') setMode('signup')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Si la usuaria volvió tras confirmar email, redimimos el código pendiente
+  useEffect(() => {
+    if (!user) return
+    let pending: string | null = null
+    try { pending = sessionStorage.getItem('neta_pending_code') } catch {}
+    if (!pending) return
+    try { sessionStorage.removeItem('neta_pending_code') } catch {}
+    void supabase.rpc('redeem_invitation_code', { p_code: pending })
+  }, [user])
+
   if (loading) return <FullCenterLoader />
-  if (user) return <Navigate to="/" replace />
+  if (user) return <Navigate to="/dashboard" replace />
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -47,14 +75,33 @@ export default function Login() {
         if (error) throw error
         toast.show('¡Hola de nuevo!', 'success')
       } else {
+        // Validar código de invitación antes de crear cuenta
+        const { data: validation, error: vErr } = await supabase.rpc('validate_invitation_code', {
+          p_code: code,
+        })
+        if (vErr) throw vErr
+        const v = validation as { valid: boolean; reason?: string }
+        if (!v.valid) {
+          toast.show(CODE_REASON_MAP[v.reason ?? 'empty'] ?? 'Código no válido', 'error')
+          setBusy(false)
+          return
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.origin },
         })
         if (error) throw error
-        // Si session es null, Supabase requiere confirmación de email
+
+        // Redimir el código (consume un cupo)
+        if (data.session) {
+          await supabase.rpc('redeem_invitation_code', { p_code: code })
+        }
+
         if (!data.session) {
+          // Necesita confirmación de email — guardamos el código para redimirlo al primer login
+          try { sessionStorage.setItem('neta_pending_code', code.trim()) } catch {}
           setPendingConfirm(true)
         } else {
           toast.show('¡Cuenta creada!', 'success')
@@ -153,6 +200,36 @@ export default function Login() {
               />
             </div>
           </div>
+
+          {mode === 'signup' && (
+            <div>
+              <label className="neta-label">Código de acceso</label>
+              <div className="relative">
+                <KeyRound size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+                <input
+                  type="text"
+                  required
+                  value={code}
+                  onChange={e => setCode(e.target.value.toUpperCase())}
+                  placeholder="Ej. NETABETA"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  className="neta-input pl-10 tracking-wider uppercase"
+                />
+              </div>
+              <p className="text-xs text-muted mt-2 leading-relaxed">
+                Neta está en beta cerrada. ¿Aún no tienes código?{' '}
+                <a
+                  href="https://wa.me/?text=Hola%20Roberto%2C%20quiero%20probar%20Neta"
+                  className="text-accent hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Solicítalo aquí
+                </a>
+              </p>
+            </div>
+          )}
 
           <button type="submit" disabled={busy} className="neta-btn-primary mt-2 flex items-center justify-center gap-2">
             {busy && <Loader2 size={16} className="animate-spin" />}

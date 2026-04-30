@@ -25,7 +25,7 @@ export default function Onboarding() {
   const [busy, setBusy] = useState(false)
 
   if (loading) return null
-  if (profile?.business_name) return <Navigate to="/" replace />
+  if (profile?.business_name) return <Navigate to="/dashboard" replace />
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
