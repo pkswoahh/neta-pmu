@@ -86,19 +86,24 @@ En `.claude/skills/`:
 ## Estado actual (al cierre de la última sesión — 2026-04-30)
 
 **Completado en esta sesión:**
-- Landing pública en `/` (12 secciones, mobile-first, mockup inline, animaciones)
-- Dashboard movido a `/dashboard`
-- Sistema de códigos de invitación para beta cerrada (migración 004 ✅ corrida)
-- Pestaña `/admin/codigos` para gestionar códigos
-- Signup pide código de acceso
+- Google OAuth ahora exige código de invitación en modo signup
+- Onboarding redime código pendiente de sessionStorage (cubre flujo OAuth)
+- Migración 005: "Cliente frecuente" y "Cliente antiguo" en Origen del cliente ✅ corrida
+- Migración 006: restaura trial_ends_at en handle_new_user (roto por 005) ✅ corrida
+- Migración 007: trial extendido a 30 días ✅ corrida
+- Bottom nav mobile fijo (flex column en lugar de position fixed — fix iOS Safari)
+- Campo Fecha compacto en mobile (Procedimientos y Gastos)
+- Template de email "Recuperar contraseña" personalizado con marca Neta. (configurado en Supabase)
 
-**Estado de migraciones:** 002 ✅ · 003 ✅ · 004 ✅ (todas corridas en producción)
+**Estado de migraciones:** 002 ✅ · 003 ✅ · 004 ✅ · 005 ✅ · 006 ✅ · 007 ✅
 
 **En vuelo:**
 - Lemon Squeezy: cuenta en validación, esperando aprobación para integrar pagos
+- Beta abierta: primeras invitaciones enviadas (trial 30 días)
 
 **Próximos pasos recomendados (en orden):**
-1. Roberto crea código de invitación en `/admin/codigos` (ej. `NETABETA`)
-2. Invitar 20 beta testers, recoger feedback
-3. Cuando Lemon Squeezy apruebe → integrar pagos (plan en `docs/PAYMENTS.md`)
-4. Conseguir dominio propio → desbloquea: email, Google OAuth, confirmación de email
+1. Recoger feedback de beta testers y iterar
+2. Cuando Lemon Squeezy apruebe → integrar pagos (plan en `docs/PAYMENTS.md`)
+3. Configurar Google OAuth en Google Cloud Console (desbloquea login social limpio)
+4. SMTP personalizado (Resend) para enviar correos desde hola@netapmu.com
+5. Analytics (Plausible o PostHog) para entender uso real

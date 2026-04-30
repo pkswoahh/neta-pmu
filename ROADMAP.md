@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-30 (landing pública + códigos de invitación para beta cerrada)
+Última actualización: 2026-04-30 (beta abierta — 30 días trial, Google OAuth con código, fixes mobile)
 
 ---
 
@@ -120,9 +120,13 @@ Diseño completo en `docs/ADMIN.md`.
 - [ ] Configurar Google OAuth (Google Cloud Console + Supabase)
 - [ ] Onboarding con datos demo de ejemplo (que vean la app llena)
 - [x] **Página de marketing / landing** — pública en `/`, app interna en `/dashboard`. Mockup inline del Dashboard, FAQ, dolores, beneficios, prueba social, animaciones al scroll.
-- [x] **Beta cerrada con código de invitación** — migración 004, RPC `validate_invitation_code` y `redeem_invitation_code`, pestaña `/admin/codigos` con CRUD. Signup pide código.
+- [x] **Beta cerrada con código de invitación** — migración 004, RPC `validate_invitation_code` y `redeem_invitation_code`, pestaña `/admin/codigos` con CRUD. Signup pide código. Google OAuth también exige código en modo signup.
+- [x] **Trial 30 días** — migración 007, extendido de 14 a 30 días.
+- [x] **Email recuperar contraseña** — template personalizado con marca Neta. configurado en Supabase.
+- [x] **Bottom nav mobile fijo** — reemplazado position fixed por flex column (fix iOS Safari).
 - [ ] Analytics (Plausible / PostHog) para entender uso real
 - [ ] Sentry o similar para tracking de errores
+- [ ] SMTP personalizado (Resend) — enviar desde hola@netapmu.com en lugar de mail.supabase.io
 
 ---
 
