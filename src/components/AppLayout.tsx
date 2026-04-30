@@ -21,9 +21,9 @@ export default function AppLayout() {
   const isAdmin = profile?.role === 'admin' || profile?.role === 'support'
 
   return (
-    <div className="min-h-dvh relative z-10 flex">
+    <div className="h-dvh relative z-10 flex">
       {/* Sidebar desktop */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-bg/60 backdrop-blur-sm sticky top-0 h-dvh px-5 py-7">
+      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-bg/60 backdrop-blur-sm h-dvh flex-shrink-0 px-5 py-7">
         <div className="mb-8 px-2">
           <Logo size="lg" />
         </div>
@@ -76,10 +76,10 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 min-w-0 has-bottom-nav">
+      {/* Columna principal — flex column que ocupa el alto restante */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Header mobile */}
-        <header className="md:hidden sticky top-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border">
+        <header className="md:hidden flex-shrink-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border">
           <div className="px-5 py-4 flex items-center justify-between">
             <Logo size="md" />
             <div className="flex items-center gap-1">
@@ -100,32 +100,35 @@ export default function AppLayout() {
 
         <AccessBanner />
 
-        <div className="px-5 md:px-10 py-6 md:py-10 max-w-5xl mx-auto">
-          <Outlet />
-        </div>
-      </main>
+        {/* Área de contenido con scroll interno */}
+        <main className="flex-1 overflow-y-auto min-h-0">
+          <div className="px-5 md:px-10 py-6 md:py-10 max-w-5xl mx-auto">
+            <Outlet />
+          </div>
+        </main>
 
-      {/* Bottom nav mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-bg/95 backdrop-blur-lg border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="grid grid-cols-5">
-          {tabs.map(t => (
-            <NavLink
-              key={t.to}
-              to={t.to}
-              end={t.end}
-              className={({ isActive }) =>
-                cn(
-                  'flex flex-col items-center justify-center gap-1 py-3 text-[10px] transition',
-                  isActive ? 'text-accent' : 'text-muted',
-                )
-              }
-            >
-              <t.icon size={20} />
-              <span>{t.shortLabel}</span>
-            </NavLink>
-          ))}
-        </div>
-      </nav>
+        {/* Bottom nav mobile — hijo flex, nunca se mueve */}
+        <nav className="md:hidden flex-shrink-0 bg-bg/95 backdrop-blur-lg border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="grid grid-cols-5">
+            {tabs.map(t => (
+              <NavLink
+                key={t.to}
+                to={t.to}
+                end={t.end}
+                className={({ isActive }) =>
+                  cn(
+                    'flex flex-col items-center justify-center gap-1 py-3 text-[10px] transition',
+                    isActive ? 'text-accent' : 'text-muted',
+                  )
+                }
+              >
+                <t.icon size={20} />
+                <span>{t.shortLabel}</span>
+              </NavLink>
+            ))}
+          </div>
+        </nav>
+      </div>
     </div>
   )
 }
