@@ -245,7 +245,7 @@ function ExpenseForm({ editing, onClose, onSaved, categories, currency }: FormPr
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="neta-label">Fecha</label>
-            <input type="date" required value={date} onChange={e => setDate(e.target.value)} className="neta-input" />
+            <input type="date" required value={date} onChange={e => setDate(e.target.value)} className="neta-input !w-auto" />
           </div>
           <div>
             <label className="neta-label">Categoría</label>
