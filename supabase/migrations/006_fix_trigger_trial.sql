@@ -1,10 +1,10 @@
 -- =============================================================
--- Neta. — Agregar "Cliente frecuente" y "Cliente antiguo" a
---         los defaults de Origen del cliente
+-- Neta. — Corrige handle_new_user: restaura trial_ends_at +
+--         agrega Cliente frecuente / Cliente antiguo
 -- Idempotente. Correr en SQL Editor de Supabase una sola vez.
 -- =============================================================
 
--- 1. Actualizar el trigger para que nuevas usuarias los reciban
+-- 1. Trigger correcto con todo incluido
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -17,19 +17,16 @@ begin
   values (new.id, 'COP', 0, now() + interval '14 days', now(), 'trial')
   on conflict (id) do nothing;
 
-  -- Procedimientos
   insert into public.user_options (user_id, type, value, "order") values
     (new.id, 'procedure', 'Labios', 0),
     (new.id, 'procedure', 'Cejas', 1),
     (new.id, 'procedure', 'Delineado', 2);
 
-  -- Métodos de pago
   insert into public.user_options (user_id, type, value, "order") values
     (new.id, 'payment_method', 'Efectivo', 0),
     (new.id, 'payment_method', 'Transferencia', 1),
     (new.id, 'payment_method', 'Nequi', 2);
 
-  -- Origen del cliente
   insert into public.user_options (user_id, type, value, "order") values
     (new.id, 'client_source', 'Instagram', 0),
     (new.id, 'client_source', 'Referido', 1),
@@ -38,7 +35,6 @@ begin
     (new.id, 'client_source', 'Cliente frecuente', 4),
     (new.id, 'client_source', 'Cliente antiguo', 5);
 
-  -- Categorías de gastos
   insert into public.user_options (user_id, type, value, "order") values
     (new.id, 'expense_category', 'Insumos', 0),
     (new.id, 'expense_category', 'Arriendo', 1),
@@ -51,15 +47,11 @@ begin
 end;
 $$;
 
--- 2. Backfill: agregar las dos opciones a usuarias existentes que no las tengan
+-- 2. Reparar usuarias que quedaron sin trial_ends_at por el bug de migración 005
 
-insert into public.user_options (user_id, type, value, "order")
-select p.id, 'client_source', v.value, v.ord
-from public.profiles p
-cross join (values ('Cliente frecuente', 4), ('Cliente antiguo', 5)) as v(value, ord)
-where not exists (
-  select 1 from public.user_options uo
-  where uo.user_id = p.id
-    and uo.type = 'client_source'
-    and uo.value = v.value
-);
+update public.profiles
+set
+  trial_ends_at = now() + interval '14 days',
+  subscription_status = 'trial'
+where trial_ends_at is null
+  and subscription_status = 'trial';
