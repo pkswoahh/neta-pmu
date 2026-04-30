@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import Logo from '@/components/Logo'
 import Select from '@/components/Select'
+import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
+import { supabase } from '@/lib/supabase'
 import { CURRENCY_TO_COUNTRY } from '@/lib/constants'
 import { Loader2, ArrowRight } from 'lucide-react'
 
@@ -17,12 +19,23 @@ const CURRENCIES = [
 ]
 
 export default function Onboarding() {
+  const { user } = useAuth()
   const { profile, updateProfile, loading } = useProfile()
   const toast = useToast()
   const nav = useNavigate()
   const [name, setName] = useState('')
   const [currency, setCurrency] = useState('COP')
   const [busy, setBusy] = useState(false)
+
+  // Redimir código de invitación pendiente (flujo Google OAuth)
+  useEffect(() => {
+    if (!user) return
+    let pending: string | null = null
+    try { pending = sessionStorage.getItem('neta_pending_code') } catch {}
+    if (!pending) return
+    try { sessionStorage.removeItem('neta_pending_code') } catch {}
+    void supabase.rpc('redeem_invitation_code', { p_code: pending })
+  }, [user])
 
   if (loading) return null
   if (profile?.business_name) return <Navigate to="/dashboard" replace />

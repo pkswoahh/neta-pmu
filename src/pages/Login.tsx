@@ -115,7 +115,32 @@ export default function Login() {
   }
 
   async function handleGoogle() {
-    setBusy(true)
+    if (mode === 'signup') {
+      if (!code.trim()) {
+        toast.show('Ingresa tu código de acceso primero.', 'error')
+        return
+      }
+      setBusy(true)
+      try {
+        const { data: validation, error: vErr } = await supabase.rpc('validate_invitation_code', {
+          p_code: code,
+        })
+        if (vErr) throw vErr
+        const v = validation as { valid: boolean; reason?: string }
+        if (!v.valid) {
+          toast.show(CODE_REASON_MAP[v.reason ?? 'empty'] ?? 'Código no válido', 'error')
+          setBusy(false)
+          return
+        }
+        try { sessionStorage.setItem('neta_pending_code', code.trim().toUpperCase()) } catch {}
+      } catch (err: any) {
+        toast.show(translateError(err.message || 'Error validando el código'), 'error')
+        setBusy(false)
+        return
+      }
+    } else {
+      setBusy(true)
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },

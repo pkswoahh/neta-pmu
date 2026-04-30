@@ -128,7 +128,9 @@ begin
     (new.id, 'client_source', 'Instagram', 0),
     (new.id, 'client_source', 'Referido', 1),
     (new.id, 'client_source', 'Google', 2),
-    (new.id, 'client_source', 'TikTok', 3);
+    (new.id, 'client_source', 'TikTok', 3),
+    (new.id, 'client_source', 'Cliente frecuente', 4),
+    (new.id, 'client_source', 'Cliente antiguo', 5);
 
   -- Categorías de gastos
   insert into public.user_options (user_id, type, value, "order") values
