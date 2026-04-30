@@ -75,7 +75,7 @@ supabase/
 | Diseño completo del módulo admin | `docs/ADMIN.md` |
 | Deploy, Netlify, dominio, env vars | `docs/DEPLOY.md` |
 | Paleta, tipografía, reglas UX | `docs/DESIGN.md` |
-| Plan de integración de Stripe | `docs/STRIPE.md` |
+| Plan de integración de pagos (Lemon Squeezy) | `docs/PAYMENTS.md` |
 
 ## Skills disponibles
 
@@ -83,11 +83,22 @@ En `.claude/skills/`:
 - `/neta-resume` — reportar estado actual y siguiente paso recomendado
 - `/neta-feature [nombre]` — workflow para empezar una feature nueva
 
-## Estado actual (al cierre de la última sesión)
+## Estado actual (al cierre de la última sesión — 2026-04-30)
 
-Se diseñó el módulo administrador (sesión 1) y se escribió `supabase/migrations/002_admin_module.sql`.
-**Pendiente inmediato:**
-1. Roberto corre la migración 002 en Supabase SQL Editor
-2. Implementar frontend de la sesión 1 del admin: tipos, gating, layout admin, Overview, Lista usuarias
+**Completado en esta sesión:**
+- Landing pública en `/` (12 secciones, mobile-first, mockup inline, animaciones)
+- Dashboard movido a `/dashboard`
+- Sistema de códigos de invitación para beta cerrada (migración 004 ✅ corrida)
+- Pestaña `/admin/codigos` para gestionar códigos
+- Signup pide código de acceso
 
-Detalles del plan en `docs/ADMIN.md` (sección "Implementación").
+**Estado de migraciones:** 002 ✅ · 003 ✅ · 004 ✅ (todas corridas en producción)
+
+**En vuelo:**
+- Lemon Squeezy: cuenta en validación, esperando aprobación para integrar pagos
+
+**Próximos pasos recomendados (en orden):**
+1. Roberto crea código de invitación en `/admin/codigos` (ej. `NETABETA`)
+2. Invitar 20 beta testers, recoger feedback
+3. Cuando Lemon Squeezy apruebe → integrar pagos (plan en `docs/PAYMENTS.md`)
+4. Conseguir dominio propio → desbloquea: email, Google OAuth, confirmación de email

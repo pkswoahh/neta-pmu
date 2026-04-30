@@ -36,8 +36,8 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] ~~Recuperación de contraseña~~
 - [x] ~~Modal de confirmación bonito~~
 - [ ] **Confirmación de email en producción** — el código ya está listo (pantalla 📬 + errores en español). Solo activar el toggle "Confirm email" en Supabase → Sign In / Providers cuando salga el dominio propio.
-- [ ] **Pasarela de pago (Stripe o MercadoPago)** — suscripción $15 USD/mes
-- [ ] **Trial de 14 días** — gating por `subscription_status`
+- [ ] **Pasarela de pago (Lemon Squeezy)** — cuenta en validación. Plan técnico completo en `docs/PAYMENTS.md`. Si rechazan: Paddle es la alternativa.
+- [x] **Trial de 14 días** — trigger `handle_new_user` da `trial_ends_at = now() + 14 days` automáticamente. Gating funcional vía `computeAccess()`.
 - [x] **Términos y Política de Privacidad** — páginas `/terminos` y `/privacidad`, links en Login (signup) y Configuración
 - [x] **Bloqueo de acceso por suscripción vencida** — banners con CTA, `/suscribirse` pricing page, redirect desde `/suscripcion-vencida`
 
@@ -111,7 +111,7 @@ Diseño completo en `docs/ADMIN.md`.
 
 ## 🌐 Camino al lanzamiento
 
-- [ ] Deploy a Netlify (URL temporal `.netlify.app`)
+- [x] Deploy a Netlify — activo en https://neta-pmu.netlify.app (auto-deploy desde main)
 - [ ] Compra de dominio (sugerencias: `neta.app`, `usaneta.com`, `holaneta.com`, `pmuneta.com`)
 - [ ] DNS apuntando a Netlify
 - [ ] SSL activado (automático con Netlify)
