@@ -103,8 +103,8 @@ Diseño completo en `docs/ADMIN.md`.
 
 ### ⏳ Pendiente futuro (no urgente)
 
-- [ ] Eliminar usuaria definitivamente (requiere Edge Function con service_role)
-- [ ] Email notifications al admin (signup, cancelación, fallo de pago) — junto con email service de Stripe
+- [ ] Eliminar usuaria definitivamente desde el admin (hoy se hace desde Supabase → Authentication → Users → Delete)
+- [ ] Email notifications al admin (signup, cancelación, fallo de pago)
 - [ ] Acciones bulk (extender trial / dar comp a varias en batch)
 
 ---
@@ -112,12 +112,12 @@ Diseño completo en `docs/ADMIN.md`.
 ## 🌐 Camino al lanzamiento
 
 - [x] Deploy a Netlify — activo en https://neta-pmu.netlify.app (auto-deploy desde main)
-- [ ] Compra de dominio (sugerencias: `neta.app`, `usaneta.com`, `holaneta.com`, `pmuneta.com`)
-- [ ] DNS apuntando a Netlify
-- [ ] SSL activado (automático con Netlify)
-- [ ] Site URL y Redirect URLs en Supabase actualizadas con dominio real
-- [ ] Email de soporte (Google Workspace o similar)
-- [ ] Configurar Google OAuth provider en Google Cloud Console + Supabase
+- [x] Dominio propio — `netapmu.com` activo con SSL
+- [x] DNS apuntando a Netlify
+- [x] SSL activado automáticamente
+- [x] Site URL y Redirect URLs en Supabase actualizadas a `netapmu.com`
+- [x] Email de soporte — `hola@netapmu.com` via ImprovMX (reenvía a Gmail)
+- [ ] Configurar Google OAuth (Google Cloud Console + Supabase)
 - [ ] Onboarding con datos demo de ejemplo (que vean la app llena)
 - [x] **Página de marketing / landing** — pública en `/`, app interna en `/dashboard`. Mockup inline del Dashboard, FAQ, dolores, beneficios, prueba social, animaciones al scroll.
 - [x] **Beta cerrada con código de invitación** — migración 004, RPC `validate_invitation_code` y `redeem_invitation_code`, pestaña `/admin/codigos` con CRUD. Signup pide código.
