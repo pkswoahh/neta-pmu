@@ -1,10 +1,9 @@
 -- =============================================================
--- Neta. — Corrige handle_new_user: restaura trial_ends_at +
---         agrega Cliente frecuente / Cliente antiguo
+-- Neta. — Cambiar trial de 14 a 30 días
 -- Idempotente. Correr en SQL Editor de Supabase una sola vez.
 -- =============================================================
 
--- 1. Trigger correcto con todo incluido
+-- 1. Actualizar el trigger para nuevas usuarias
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -47,11 +46,9 @@ begin
 end;
 $$;
 
--- 2. Reparar usuarias que quedaron sin trial_ends_at por el bug de migración 005
+-- 2. Extender a 30 días las usuarias que aún están en trial activo
 
 update public.profiles
-set
-  trial_ends_at = now() + interval '30 days',
-  subscription_status = 'trial'
-where trial_ends_at is null
-  and subscription_status = 'trial';
+set trial_ends_at = created_at + interval '30 days'
+where subscription_status = 'trial'
+  and trial_ends_at > now();

@@ -14,7 +14,7 @@ set search_path = public
 as $$
 begin
   insert into public.profiles (id, currency, monthly_goal, trial_ends_at, last_seen_at, subscription_status)
-  values (new.id, 'COP', 0, now() + interval '14 days', now(), 'trial')
+  values (new.id, 'COP', 0, now() + interval '30 days', now(), 'trial')
   on conflict (id) do nothing;
 
   -- Procedimientos
