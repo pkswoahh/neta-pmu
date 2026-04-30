@@ -4,7 +4,8 @@
 
 | Recurso | URL |
 |---|---|
-| Producción | https://neta-pmu.netlify.app |
+| Producción | https://netapmu.com (dominio propio desde 2026-04-30) |
+| Netlify (alias) | https://neta-pmu.netlify.app |
 | Repo | https://github.com/pkswoahh/neta-pmu |
 | Supabase project | https://jolxvidopodflypelwxn.supabase.co |
 | Supabase dashboard | https://supabase.com/dashboard/project/jolxvidopodflypelwxn |
@@ -33,9 +34,11 @@ Si rotas claves, actualizar ambos lugares + redeploy.
 
 En **Supabase → Authentication → URL Configuration**:
 
-- **Site URL**: `https://neta-pmu.netlify.app`
+- **Site URL**: `https://netapmu.com`
 - **Redirect URLs**:
-  - `https://neta-pmu.netlify.app/**`
+  - `https://netapmu.com/**`
+  - `https://netapmu.com/cambiar-password`
+  - `https://neta-pmu.netlify.app/**` (mantener como fallback)
   - `https://neta-pmu.netlify.app/cambiar-password`
 
 Para desarrollo local, agregar también:
@@ -60,18 +63,16 @@ El código (Login.tsx) ya maneja ambos casos. Cuando salga el dominio propio:
 6. Verificar success en panel Results
 7. Marcar como corrida en `docs/DATABASE.md`
 
-## Camino al dominio propio
+## Dominio propio — netapmu.com (activo desde 2026-04-30)
 
-Cuando llegue el dominio (sugerencias: `neta.app`, `usaneta.com`, `holaneta.com`, `pmuneta.com`):
-
-1. Comprar en Namecheap / Cloudflare (~$10-15 USD/año)
-2. Netlify → Domain management → Add custom domain
-3. Seguir las instrucciones de DNS (apuntar nameservers a Netlify o agregar CNAME)
-4. SSL automático (Let's Encrypt)
-5. Volver a Supabase → Auth → URL Configuration → cambiar Site URL al dominio nuevo + agregarlo a Redirect URLs (mantener el `.netlify.app` un tiempo)
-6. Activar email confirmation
-7. Comprar email Workspace o usar Cloudflare Email Routing para `hola@<dominio>`
-8. Actualizar `src/lib/constants.ts` con el dominio del email de soporte real
+Migración completada:
+1. ✅ Dominio comprado: `netapmu.com`
+2. ☐ Netlify → Domain management → Add custom domain → DNS configurado
+3. ☐ SSL automático (Let's Encrypt — Netlify lo activa solo)
+4. ☐ Supabase → Auth → URL Configuration → Site URL y Redirect URLs actualizados
+5. ☐ Confirmación de email activada (Auth → Sign In / Providers → Email → "Confirm email")
+6. ☐ Email `hola@netapmu.com` configurado (Cloudflare Email Routing o Google Workspace)
+7. ✅ `src/lib/constants.ts` — SUPPORT_EMAIL actualizado a `hola@netapmu.com`
 
 ## Service Worker — gotchas
 

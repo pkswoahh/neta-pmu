@@ -1,7 +1,7 @@
 // Email de soporte. Cuando el dominio propio esté listo, este buzón debe
 // existir y atender mensajes. Mientras tanto, se muestra en pantallas de
 // gating pero rebotará — decisión consciente de no exponer el Gmail personal.
-export const SUPPORT_EMAIL = 'hola@neta.app'
+export const SUPPORT_EMAIL = 'hola@netapmu.com'
 
 // Mapa de moneda → código de país ISO. Usado en onboarding para derivar
 // country sin pedírselo a la usuaria.
