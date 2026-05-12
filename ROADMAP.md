@@ -53,7 +53,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] ~~Skeletons de carga~~
 - [x] ~~Fechas relativas~~
 - [x] ~~Exportar a CSV (Procedimientos y Gastos)~~
-- [ ] **Validación al borrar opciones de Configuración** — advertir si tienen registros asociados
+- [x] ~~Validación al borrar opciones de Configuración~~ — el modal ahora cuenta cuántos registros usan la opción y advierte con el número exacto
 - [ ] **Mensajes de error de Supabase traducidos al español**
 
 ---
