@@ -17,7 +17,7 @@ export default function UpdatePrompt() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed z-[90] bottom-24 md:bottom-6 right-4 left-4 md:left-auto md:max-w-sm animate-slide-up"
+      className="fixed z-[90] bottom-40 md:bottom-24 right-4 left-4 md:left-auto md:max-w-sm animate-slide-up"
     >
       <div className="bg-surface/95 backdrop-blur-md border border-accent/30 rounded-2xl shadow-2xl p-4 flex items-start gap-3">
         <div className="shrink-0 w-9 h-9 rounded-full bg-accent/15 text-accent flex items-center justify-center">

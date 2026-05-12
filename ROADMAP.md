@@ -118,7 +118,9 @@ Diseño completo en `docs/ADMIN.md`.
 - [x] Site URL y Redirect URLs en Supabase actualizadas a `netapmu.com`
 - [x] Email de soporte — `hola@netapmu.com` via ImprovMX (reenvía a Gmail)
 - [ ] Configurar Google OAuth (Google Cloud Console + Supabase)
-- [ ] Onboarding con datos demo de ejemplo (que vean la app llena)
+- [ ] Onboarding con datos demo de ejemplo (que vean la app llena) — en standby, esperando feedback real de beta
+- [x] **Dashboard vacío cálido** — cuando la cuenta no tiene ni procs ni gastos, se reemplaza el dashboard por bienvenida con CTA "Registrar mi primer cliente"
+- [x] **Botón flotante de soporte WhatsApp** — en AppLayout, abre wa.me con mensaje pre-armado que incluye la pantalla actual. Reduce fricción para feedback de beta testers.
 - [x] **Página de marketing / landing** — pública en `/`, app interna en `/dashboard`. Mockup inline del Dashboard, FAQ, dolores, beneficios, prueba social, animaciones al scroll.
 - [x] **Beta cerrada con código de invitación** — migración 004, RPC `validate_invitation_code` y `redeem_invitation_code`, pestaña `/admin/codigos` con CRUD. Signup pide código. Google OAuth también exige código en modo signup.
 - [x] **Trial 30 días** — migración 007, extendido de 14 a 30 días.

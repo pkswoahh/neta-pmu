@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
+import { SUPPORT_WHATSAPP } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
 import Logo from '@/components/Logo'
 import Modal from '@/components/Modal'
@@ -230,7 +231,7 @@ export default function Login() {
               <p className="text-xs text-muted mt-2 leading-relaxed">
                 Neta está en beta cerrada. ¿Aún no tienes código?{' '}
                 <a
-                  href="https://wa.me/?text=Hola%20Roberto%2C%20quiero%20probar%20Neta"
+                  href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hola Roberto, quiero probar Neta.')}`}
                   className="text-accent hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"

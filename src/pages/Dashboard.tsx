@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X, Sparkles, ArrowRight, Settings } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -20,6 +21,8 @@ export default function Dashboard() {
   const [prevExps, setPrevExps] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [historyNames, setHistoryNames] = useState<Map<string, string>>(new Map())
+  const [totalProcCount, setTotalProcCount] = useState(0)
+  const [totalExpenseCount, setTotalExpenseCount] = useState(0)
 
   useEffect(() => {
     if (!user) return
@@ -30,12 +33,14 @@ export default function Dashboard() {
       const prevMonth = shiftMonth(month, -1)
       const { start: pStart, end: pEnd } = monthRange(prevMonth)
 
-      const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }] = await Promise.all([
+      const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }, { count: procCount }, { count: expCount }] = await Promise.all([
         supabase.from('procedures').select('*').eq('user_id', user.id).gte('date', start).lt('date', end).order('date', { ascending: false }),
         supabase.from('expenses').select('*').eq('user_id', user.id).gte('date', start).lt('date', end),
         supabase.from('procedures').select('amount,date').eq('user_id', user.id).gte('date', pStart).lt('date', pEnd),
         supabase.from('expenses').select('amount').eq('user_id', user.id).gte('date', pStart).lt('date', pEnd),
         supabase.from('procedures').select('client_name,date').eq('user_id', user.id).lt('date', end),
+        supabase.from('procedures').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('expenses').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       ])
       if (cancelled) return
       const map = new Map<string, string>()
@@ -50,10 +55,14 @@ export default function Dashboard() {
       setExps((eData ?? []) as Expense[])
       setPrevProcs((ppData ?? []) as any[])
       setPrevExps((peData ?? []) as any[])
+      setTotalProcCount(procCount ?? 0)
+      setTotalExpenseCount(expCount ?? 0)
       setLoading(false)
     })()
     return () => { cancelled = true }
   }, [user, month])
+
+  const isEmptyAccount = totalProcCount === 0 && totalExpenseCount === 0
 
   const currency = profile?.currency ?? 'COP'
   const goal = profile?.monthly_goal ?? 0
@@ -100,6 +109,10 @@ export default function Dashboard() {
   async function saveGoal() { await updateProfile({ monthly_goal: draftGoal }); setEditingGoal(false) }
 
   const prevLabel = monthLabel(shiftMonth(month, -1))
+
+  if (!loading && isEmptyAccount) {
+    return <WelcomeEmptyState businessName={profile?.business_name ?? null} />
+  }
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -190,6 +203,44 @@ export default function Dashboard() {
           <BreakdownCard title="Egresos por categoría" items={expenseBreakdown} valueAsMoney currency={currency} negative />
         </>
       )}
+    </div>
+  )
+}
+
+function WelcomeEmptyState({ businessName }: { businessName: string | null }) {
+  const firstName = businessName?.split(' ')[0] ?? null
+  return (
+    <div className="animate-fade-in flex items-center justify-center min-h-[70vh] md:min-h-[80vh] px-2">
+      <div className="w-full max-w-md text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent/15 text-accent mb-6">
+          <Sparkles size={28} />
+        </div>
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+          {firstName ? `¡Bienvenida, ${firstName}!` : '¡Bienvenida a Neta!'}
+        </h1>
+        <p className="text-muted mt-3 leading-relaxed">
+          Tu dashboard cobra vida cuando registras tu primer procedimiento.
+          Te toma menos de 30 segundos.
+        </p>
+
+        <Link
+          to="/procedimientos"
+          className="neta-btn-primary mt-8 inline-flex items-center justify-center gap-2 w-full md:w-auto md:px-10 text-base shadow-2xl"
+        >
+          Registrar mi primer cliente
+          <ArrowRight size={18} />
+        </Link>
+
+        <div className="mt-6 flex flex-col sm:flex-row gap-2 justify-center text-sm">
+          <Link to="/configuracion" className="text-muted hover:text-primary transition-colors inline-flex items-center justify-center gap-1.5">
+            <Settings size={14} /> Personalizar mis opciones primero
+          </Link>
+        </div>
+
+        <p className="text-xs text-muted mt-10 leading-relaxed max-w-sm mx-auto">
+          Tip: en <span className="text-primary">Configuración</span> puedes editar tus procedimientos, métodos de pago y categorías de gastos.
+        </p>
+      </div>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock } from 'lucide-react'
 import Logo from './Logo'
+import SupportButton from './SupportButton'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { cn, shortDate } from '@/lib/utils'
@@ -106,6 +107,8 @@ export default function AppLayout() {
             <Outlet />
           </div>
         </main>
+
+        <SupportButton />
 
         {/* Bottom nav mobile — hijo flex, nunca se mueve */}
         <nav className="md:hidden flex-shrink-0 bg-bg/95 backdrop-blur-lg border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>

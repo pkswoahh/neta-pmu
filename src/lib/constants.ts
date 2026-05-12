@@ -3,6 +3,11 @@
 // gating pero rebotará — decisión consciente de no exponer el Gmail personal.
 export const SUPPORT_EMAIL = 'hola@netapmu.com'
 
+// Número de WhatsApp de soporte (solo dígitos, con código de país, SIN + ni espacios).
+// Se usa en el botón flotante de soporte y en links de la landing/login.
+// Ejemplo Colombia: '573001234567'. Reemplazar antes de pushear a producción.
+export const SUPPORT_WHATSAPP = '16452465025'
+
 // Mapa de moneda → código de país ISO. Usado en onboarding para derivar
 // country sin pedírselo a la usuaria.
 export const CURRENCY_TO_COUNTRY: Record<string, string> = {
