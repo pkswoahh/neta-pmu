@@ -6,6 +6,7 @@ import {
   KeyRound, ChevronDown, ChevronUp,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useToast } from '@/components/Toast'
 import { DashboardSkeleton } from '@/components/Skeleton'
 import { computeAccess, stateLabel, stateBadgeClasses } from '@/lib/access'
@@ -33,7 +34,7 @@ export default function UsuariaDetalle() {
     setLoading(true)
     const { data: detail, error } = await supabase.rpc('admin_user_detail', { target: id })
     if (error) {
-      toast.show(error.message, 'error')
+      toast.show(translateError(error), 'error')
       setLoading(false)
       return
     }
@@ -50,7 +51,7 @@ export default function UsuariaDetalle() {
       redirectTo: `${window.location.origin}/cambiar-password`,
     })
     setResetBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else toast.show('Email de reset enviado', 'success')
   }
 

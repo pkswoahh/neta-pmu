@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, X, Download, Users, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useToast } from '@/components/Toast'
 import { ListSkeleton } from '@/components/Skeleton'
 import Empty from '@/components/Empty'
@@ -43,7 +44,7 @@ export default function AdminUsuarias() {
       const { data, error } = await supabase.rpc('admin_list_users')
       if (cancelled) return
       if (error) {
-        toast.show(error.message, 'error')
+        toast.show(translateError(error), 'error')
         setLoading(false)
         return
       }

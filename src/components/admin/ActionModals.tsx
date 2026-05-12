@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import Modal from '@/components/Modal'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useToast } from '@/components/Toast'
 import { todayISO } from '@/lib/utils'
 
@@ -29,7 +30,7 @@ export function SuspendModal({ open, onClose, onDone, targetUserId, targetName }
     setBusy(true)
     const { error } = await supabase.rpc('admin_suspend_user', { target: targetUserId, reason_text: reason.trim() })
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show('Cuenta suspendida', 'success'); onDone() }
   }
 
@@ -78,7 +79,7 @@ export function UnsuspendModal({ open, onClose, onDone, targetUserId, targetName
     setBusy(true)
     const { error, data } = await supabase.rpc('admin_unsuspend_user', { target: targetUserId, reason_text: reason.trim() || null })
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show(`Reactivada como ${data}`, 'success'); onDone() }
   }
 
@@ -132,7 +133,7 @@ export function CompModal({ open, onClose, onDone, targetUserId, targetName }: B
       reason_text: reason.trim() || null,
     })
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show('Cortesía otorgada', 'success'); onDone() }
   }
 
@@ -204,7 +205,7 @@ export function RemoveCompModal({ open, onClose, onDone, targetUserId, targetNam
       reason_text: reason.trim() || null,
     })
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show(`Cortesía retirada — quedó como ${data}`, 'success'); onDone() }
   }
 
@@ -257,7 +258,7 @@ export function ExtendTrialModal({ open, onClose, onDone, targetUserId, targetNa
       reason_text: reason.trim() || null,
     })
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show(`Trial extendido ${days} días`, 'success'); onDone() }
   }
 

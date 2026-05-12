@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Lock, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/components/Toast'
 import Logo from '@/components/Logo'
@@ -39,7 +40,7 @@ export default function RecoverPassword() {
     setBusy(true)
     const { error } = await supabase.auth.updateUser({ password })
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else {
       toast.show('Contraseña actualizada', 'success')
       nav('/', { replace: true })

@@ -54,7 +54,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] ~~Fechas relativas~~
 - [x] ~~Exportar a CSV (Procedimientos y Gastos)~~
 - [x] ~~Validación al borrar opciones de Configuración~~ — el modal ahora cuenta cuántos registros usan la opción y advierte con el número exacto
-- [ ] **Mensajes de error de Supabase traducidos al español**
+- [x] ~~Mensajes de error de Supabase traducidos al español~~ — módulo `src/lib/errors.ts` con `translateError()`, aplicado en todas las páginas que muestran errores (auth, signup, recuperar contraseña, CRUD, admin)
 
 ---
 

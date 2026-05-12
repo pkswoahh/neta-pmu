@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import Logo from '@/components/Logo'
 import Modal from '@/components/Modal'
@@ -9,28 +10,12 @@ import { Mail, Lock, Loader2, KeyRound } from 'lucide-react'
 
 type Mode = 'signin' | 'signup'
 
-const ERROR_MAP: Record<string, string> = {
-  'Invalid login credentials': 'Email o contraseña incorrectos.',
-  'Email not confirmed': 'Debes confirmar tu correo antes de entrar. Revisa tu bandeja de entrada.',
-  'User already registered': 'Ya existe una cuenta con ese email. Intenta entrar.',
-  'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
-  'Signup requires a valid password': 'Ingresa una contraseña válida.',
-  'rate limit': 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
-}
-
 const CODE_REASON_MAP: Record<string, string> = {
   empty: 'Ingresa tu código de acceso.',
   not_found: 'Ese código no existe. Revísalo bien.',
   inactive: 'Ese código ya no está activo.',
   expired: 'Ese código venció.',
   exhausted: 'Ese código ya fue usado el número máximo de veces.',
-}
-
-function translateError(msg: string): string {
-  for (const [key, val] of Object.entries(ERROR_MAP)) {
-    if (msg.toLowerCase().includes(key.toLowerCase())) return val
-  }
-  return msg
 }
 
 export default function Login() {
@@ -108,7 +93,7 @@ export default function Login() {
         }
       }
     } catch (err: any) {
-      toast.show(translateError(err.message || 'Algo falló, intenta de nuevo'), 'error')
+      toast.show(translateError(err), 'error')
     } finally {
       setBusy(false)
     }
@@ -134,7 +119,7 @@ export default function Login() {
         }
         try { sessionStorage.setItem('neta_pending_code', code.trim().toUpperCase()) } catch {}
       } catch (err: any) {
-        toast.show(translateError(err.message || 'Error validando el código'), 'error')
+        toast.show(translateError(err, 'Error validando el código'), 'error')
         setBusy(false)
         return
       }
@@ -146,7 +131,7 @@ export default function Login() {
       options: { redirectTo: window.location.origin },
     })
     if (error) {
-      toast.show(error.message, 'error')
+      toast.show(translateError(error), 'error')
       setBusy(false)
     }
   }
@@ -314,7 +299,7 @@ function ResetPasswordModal({ initialEmail, onClose }: { initialEmail: string; o
       redirectTo: `${window.location.origin}/cambiar-password`,
     })
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else {
       setSent(true)
       toast.show('Te enviamos un correo', 'success')

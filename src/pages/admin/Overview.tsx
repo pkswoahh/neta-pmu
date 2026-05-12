@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TrendingUp, Users, Clock, Gift, Ban, AlertTriangle, UserPlus, Activity, Sparkles } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { DashboardSkeleton } from '@/components/Skeleton'
 import { useToast } from '@/components/Toast'
 import { formatMoney } from '@/lib/utils'
@@ -24,7 +25,7 @@ export default function AdminOverviewPage() {
         supabase.rpc('admin_signups_daily'),
       ])
       if (cancelled) return
-      if (overviewRes.error) toast.show(overviewRes.error.message, 'error')
+      if (overviewRes.error) toast.show(translateError(overviewRes.error), 'error')
       else setData(overviewRes.data as AdminOverview)
       if (!dailyRes.error && dailyRes.data) setSignups(dailyRes.data as DailySignup[])
       setLoading(false)

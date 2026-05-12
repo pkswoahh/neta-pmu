@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Edit2, Trash2, ClipboardList, Search, Download, X, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
@@ -42,7 +43,7 @@ export default function Procedimientos() {
       .lt('date', end)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else setItems((data ?? []) as Procedure[])
     setLoading(false)
   }
@@ -58,7 +59,7 @@ export default function Procedimientos() {
     })
     if (!ok) return
     const { error } = await supabase.from('procedures').delete().eq('id', p.id)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show('Eliminado', 'success'); await load() }
   }
 
@@ -247,7 +248,7 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
       ? await supabase.from('procedures').update(payload).eq('id', editing.id)
       : await supabase.from('procedures').insert(payload)
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show(editing ? 'Actualizado' : 'Registrado', 'success'); onSaved() }
   }
 

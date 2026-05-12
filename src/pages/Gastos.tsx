@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Edit2, Trash2, Wallet, Search, Download, X, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
@@ -40,7 +41,7 @@ export default function Gastos() {
       .lt('date', end)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else setItems((data ?? []) as Expense[])
     setLoading(false)
   }
@@ -56,7 +57,7 @@ export default function Gastos() {
     })
     if (!ok) return
     const { error } = await supabase.from('expenses').delete().eq('id', g.id)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show('Eliminado', 'success'); await load() }
   }
 
@@ -229,7 +230,7 @@ function ExpenseForm({ editing, onClose, onSaved, categories, currency }: FormPr
       ? await supabase.from('expenses').update(payload).eq('id', editing.id)
       : await supabase.from('expenses').insert(payload)
     setBusy(false)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else { toast.show(editing ? 'Actualizado' : 'Registrado', 'success'); onSaved() }
   }
 

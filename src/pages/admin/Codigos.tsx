@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Power, Trash2, Copy, Check, Ticket } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useToast } from '@/components/Toast'
 import { useConfirm } from '@/components/Confirm'
 import Modal from '@/components/Modal'
@@ -21,7 +22,7 @@ export default function Codigos() {
     setLoading(true)
     const { data, error } = await supabase.rpc('admin_list_invitation_codes')
     if (error) {
-      toast.show(error.message, 'error')
+      toast.show(translateError(error), 'error')
     } else {
       setItems((data ?? []) as InvitationCode[])
     }
@@ -35,7 +36,7 @@ export default function Codigos() {
       p_id: c.id,
       p_active: !c.active,
     })
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else {
       toast.show(c.active ? 'Código desactivado' : 'Código activado', 'success')
       void load()
@@ -51,7 +52,7 @@ export default function Codigos() {
     })
     if (!ok) return
     const { error } = await supabase.rpc('admin_delete_invitation_code', { p_id: c.id })
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else {
       toast.show('Código eliminado', 'success')
       void load()
@@ -180,7 +181,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
     })
     setBusy(false)
     if (error) {
-      toast.show(error.message, 'error')
+      toast.show(translateError(error), 'error')
     } else {
       toast.show('Código creado', 'success')
       onCreated()

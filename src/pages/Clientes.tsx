@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Search, Users, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
@@ -32,7 +33,7 @@ export default function Clientes() {
         .eq('user_id', user.id)
         .order('date', { ascending: false })
       if (cancelled) return
-      if (error) toast.show(error.message, 'error')
+      if (error) toast.show(translateError(error), 'error')
       else setItems(aggregateClients((data ?? []) as Procedure[]))
       setLoading(false)
     })()

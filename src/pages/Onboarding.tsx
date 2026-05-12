@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { CURRENCY_TO_COUNTRY } from '@/lib/constants'
 import { Loader2, ArrowRight } from 'lucide-react'
 
@@ -53,7 +54,7 @@ export default function Onboarding() {
       toast.show('Listo. Configura tus opciones cuando quieras', 'success')
       nav('/configuracion', { replace: true })
     } catch (e: any) {
-      toast.show(e.message ?? 'Error', 'error')
+      toast.show(translateError(e), 'error')
     } finally {
       setBusy(false)
     }

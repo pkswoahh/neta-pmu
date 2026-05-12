@@ -4,6 +4,7 @@ import {
   FileClock, Ban, RotateCcw, Gift, GiftIcon, Clock, Shield, Search, X,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useToast } from '@/components/Toast'
 import { ListSkeleton } from '@/components/Skeleton'
 import Empty from '@/components/Empty'
@@ -32,7 +33,7 @@ export default function Auditoria() {
       setLoading(true)
       const { data, error } = await supabase.rpc('admin_audit_log_recent', { limit_n: 200 })
       if (cancelled) return
-      if (error) toast.show(error.message, 'error')
+      if (error) toast.show(translateError(error), 'error')
       else setEntries((data ?? []) as AdminAuditEntry[])
       setLoading(false)
     })()

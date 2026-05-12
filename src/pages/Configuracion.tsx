@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Trash2, Edit2, Check, X, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { translateError } from '@/lib/errors'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/components/Toast'
@@ -69,7 +70,7 @@ export default function Configuracion() {
       })
       toast.show('Cambios guardados', 'success')
     } catch (e: any) {
-      toast.show(e.message ?? 'Error', 'error')
+      toast.show(translateError(e), 'error')
     } finally {
       setSaving(false)
     }
@@ -145,7 +146,7 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
     if (!value || !user) return
     const order = items.length
     const { error } = await supabase.from('user_options').insert({ user_id: user.id, type, value, order })
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else {
       setAdding('')
       await onChanged()
@@ -175,7 +176,7 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
     })
     if (!ok) return
     const { error } = await supabase.from('user_options').delete().eq('id', opt.id)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else {
       toast.show('Eliminado', 'success')
       await onChanged()
@@ -186,7 +187,7 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
     const value = editingValue.trim()
     if (!value) return
     const { error } = await supabase.from('user_options').update({ value }).eq('id', opt.id)
-    if (error) toast.show(error.message, 'error')
+    if (error) toast.show(translateError(error), 'error')
     else {
       setEditingId(null)
       await onChanged()
