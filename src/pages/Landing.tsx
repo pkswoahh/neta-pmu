@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
   ArrowRight, Check, ChevronDown, Sparkles, Target, TrendingUp, TrendingDown,
-  ClipboardList, Users, Wallet, Calendar, BarChart3, Smartphone, Globe, Heart,
-  Eye, Hand, Scissors, GraduationCap, Apple,
+  ClipboardList, Users, Wallet, BarChart3, Smartphone, Globe, Home, Car,
+  Building2, GraduationCap, Clock, User,
 } from 'lucide-react'
 import Logo from '@/components/Logo'
 import { useAuth } from '@/contexts/AuthContext'
@@ -155,7 +155,7 @@ function Hero() {
           <Reveal>
             <div className="inline-flex items-center gap-2 bg-surface border border-border rounded-full px-3 py-1.5 text-xs">
               <Sparkles size={12} className="text-accent" />
-              <span className="text-muted">Hecho para micropigmentadoras</span>
+              <span className="text-muted">Para la micropigmentadora que trabaja sola</span>
             </div>
           </Reveal>
 
@@ -171,7 +171,7 @@ function Hero() {
 
           <Reveal delay={160}>
             <p className="text-base md:text-lg text-muted leading-relaxed max-w-md">
-              Registra tu trabajo, controla tus gastos y mira en tiempo real cuánto ganas — todo desde tu celular, sin Excel ni cuadernos.
+              Eres tu propia jefa, contadora y recepcionista. Neta te muestra en tiempo real cuánto ganas, cuánto gastas y cuánto te queda — desde tu celular, sin Excel ni cuadernos.
             </p>
           </Reveal>
 
@@ -181,7 +181,7 @@ function Hero() {
                 to="/login?signup=1"
                 className="neta-btn-primary inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base"
               >
-                Empezar 14 días gratis <ArrowRight size={16} />
+                Empezar 30 días gratis <ArrowRight size={16} />
               </Link>
               <a
                 href="#como-funciona"
@@ -345,12 +345,12 @@ function MockBar({ label, pct, count, color }: { label: string; pct: number; cou
 // Pain section
 // ──────────────────────────────────────────────────────────────────
 const PAINS = [
-  '"No sé cuánto gané este mes."',
-  '"Mis gastos se me van de las manos."',
-  '"No sé si mi precio está bien puesto."',
-  '"Tengo los datos de mis clientas regados."',
+  '"Trabajo sola — soy la jefa, la contadora y la recepcionista."',
+  '"No sé cuánto gané este mes de verdad, después de gastos."',
+  '"Mezclo la plata del negocio con la mía y no sé en qué se fue."',
+  '"Tengo el historial de mis clientas regado entre WhatsApp y la cabeza."',
+  '"Estoy ocupada todo el día, pero no sé si estoy ganando."',
   '"He probado Excel y lo abandono en una semana."',
-  '"No sé si voy a cumplir mi meta del mes."',
 ]
 
 function PainSection() {
@@ -585,14 +585,12 @@ function BeforeAfter() {
 // For whom
 // ──────────────────────────────────────────────────────────────────
 const FOR = [
-  { icon: Sparkles, title: 'Micropigmentadoras', tag: 'Hecha para ti' },
-  { icon: Eye, title: 'Lashistas' },
-  { icon: Hand, title: 'Manicuristas' },
-  { icon: Heart, title: 'Esteticistas' },
-  { icon: Scissors, title: 'Tatuadoras' },
-  { icon: GraduationCap, title: 'Instructoras PMU' },
-  { icon: Apple, title: 'Nutricionistas' },
-  { icon: Calendar, title: 'Profesionales independientes' },
+  { icon: Home, title: 'Tienes cabina en casa', desc: 'O un espacio propio donde atiendes a tus clientas.' },
+  { icon: Building2, title: 'Rentas un puesto', desc: 'Trabajas en un estudio compartido pagando renta fija o porcentaje.' },
+  { icon: Car, title: 'Atiendes a domicilio', desc: 'Vas tú donde tus clientas, con tu maletín y tu agenda.' },
+  { icon: GraduationCap, title: 'Recién egresaste', desc: 'Estás empezando y quieres entender tus números desde el día uno.' },
+  { icon: Clock, title: 'Llevas años trabajando', desc: 'Pero aún no tienes claridad real de cuánto ganas al mes.' },
+  { icon: User, title: 'Sin equipo, solo tú', desc: 'Eres jefa, contadora, marketing y recepcionista al mismo tiempo.' },
 ]
 
 function ForWhom() {
@@ -603,30 +601,33 @@ function ForWhom() {
           <div className="text-center mb-12 md:mb-14">
             <div className="text-xs uppercase tracking-wider text-accent mb-3">Para quién</div>
             <h2 className="text-3xl md:text-5xl font-semibold tracking-tight mb-4">
-              Pensada para profesionales independientes
+              Hecha para la micropigmentadora que trabaja sola
             </h2>
             <p className="text-muted max-w-xl mx-auto leading-relaxed">
-              Si trabajas sola, atiendes clientas con cita y manejas tus propios gastos — Neta es para ti.
+              Sin equipo, sin recepcionista, sin contadora. Tú haces todo — y Neta te da la claridad financiera que te falta.
             </p>
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
           {FOR.map((f, i) => (
-            <Reveal key={f.title} delay={(i % 4) * 60}>
-              <div
-                className={cn(
-                  'neta-card !p-4 flex flex-col items-center text-center transition-all hover:-translate-y-1',
-                  f.tag ? 'border-accent/40 bg-accent/5' : 'hover:border-accent/30',
-                )}
-              >
-                <f.icon size={20} className={cn('mb-2', f.tag ? 'text-accent' : 'text-muted')} />
-                <div className="text-sm font-medium">{f.title}</div>
-                {f.tag && <div className="text-[10px] text-accent uppercase tracking-wider mt-1">{f.tag}</div>}
+            <Reveal key={f.title} delay={(i % 3) * 80}>
+              <div className="neta-card h-full hover:-translate-y-1 hover:border-accent/40 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-3">
+                  <f.icon size={18} className="text-accent" />
+                </div>
+                <div className="text-sm font-semibold mb-1">{f.title}</div>
+                <p className="text-xs text-muted leading-relaxed">{f.desc}</p>
               </div>
             </Reveal>
           ))}
         </div>
+
+        <Reveal delay={200}>
+          <p className="text-center text-xs text-muted mt-10 max-w-md mx-auto leading-relaxed">
+            ¿Tienes un equipo de varias especialistas y manejas comisiones? El plan <span className="text-accent">Estudio</span> está en camino. Por ahora, Neta es para ti si trabajas sola.
+          </p>
+        </Reveal>
       </div>
     </section>
   )
@@ -697,12 +698,16 @@ const FAQ_ITEMS = [
     a: 'Neta es mobile-first y registrar un procedimiento te toma menos de 30 segundos. Si usas WhatsApp, sabes usar Neta. No hay nada que aprender.',
   },
   {
-    q: '$15 USD al mes, ¿no es mucho?',
-    a: 'Si no sabes cuánto ganas, tampoco sabes si $15 es mucho. Un solo procedimiento mal cobrado te cuesta más que la suscripción de varios meses.',
+    q: '$12 USD al mes, ¿no es mucho?',
+    a: 'Un solo procedimiento mal cobrado te cuesta más que varios meses de Neta. Y si pagas anual quedan en $9 USD/mes. Hoy estás trabajando sin saber cuánto te queda de verdad — eso te cuesta mucho más.',
   },
   {
     q: '¿Y si no me funciona?',
-    a: 'Tienes 14 días gratis para probar. Sin tarjeta. Sin compromiso. Si no es para ti, simplemente no continúas.',
+    a: 'Tienes 30 días gratis para probar. Sin tarjeta. Sin compromiso. Si no es para ti, simplemente no continúas.',
+  },
+  {
+    q: 'Tengo equipo de varias especialistas, ¿también me sirve?',
+    a: 'Hoy Neta está hecha para la micropigmentadora que trabaja sola. Estamos preparando el plan Estudio para negocios con equipo y comisiones — escríbenos por WhatsApp y te avisamos cuando esté listo.',
   },
   {
     q: 'Yo con el cuaderno me arreglo bien.',
@@ -730,7 +735,7 @@ const FAQ_ITEMS = [
   },
   {
     q: '¿Qué tiene que no tenga otra app?',
-    a: 'Está hecha específicamente para micropigmentadoras. Cada campo, cada categoría, cada flujo fue pensado para tu trabajo — no es una app genérica de finanzas adaptada a medias.',
+    a: 'Está hecha específicamente para micropigmentadoras que trabajan solas. Cada campo, cada categoría, cada flujo fue pensado para tu trabajo — no es una app genérica de finanzas adaptada a medias.',
   },
 ]
 
@@ -801,12 +806,13 @@ const PRICING_FEATURES = [
 ]
 
 function Pricing() {
+  const [annual, setAnnual] = useState(true)
   return (
     <section className="py-20 md:py-28 px-5 md:px-8 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full bg-accent/10 blur-[100px] pointer-events-none" />
       <div className="max-w-md mx-auto relative">
         <Reveal>
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <div className="text-xs uppercase tracking-wider text-accent mb-3">Precio simple</div>
             <h2 className="text-3xl md:text-5xl font-semibold tracking-tight">
               Un solo plan. Todo incluido.
@@ -814,21 +820,70 @@ function Pricing() {
           </div>
         </Reveal>
 
+        <Reveal delay={80}>
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="inline-flex bg-surface border border-border rounded-full p-1">
+              <button
+                type="button"
+                onClick={() => setAnnual(false)}
+                className={cn(
+                  'px-4 py-1.5 text-xs font-medium rounded-full transition-all',
+                  !annual ? 'bg-accent text-bg' : 'text-muted hover:text-primary',
+                )}
+              >
+                Mensual
+              </button>
+              <button
+                type="button"
+                onClick={() => setAnnual(true)}
+                className={cn(
+                  'px-4 py-1.5 text-xs font-medium rounded-full transition-all flex items-center gap-1.5',
+                  annual ? 'bg-accent text-bg' : 'text-muted hover:text-primary',
+                )}
+              >
+                Anual
+                <span className={cn(
+                  'text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded',
+                  annual ? 'bg-bg/20' : 'bg-accent/20 text-accent',
+                )}>
+                  -25%
+                </span>
+              </button>
+            </div>
+          </div>
+        </Reveal>
+
         <Reveal delay={120}>
           <div className="neta-card border-accent/30 relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-bg text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-              14 días gratis
+              30 días gratis
             </div>
 
             <div className="text-center pt-2 pb-4">
               <span className="inline-block bg-accent/10 text-accent text-xs font-medium px-3 py-1 rounded-full mb-4">
-                Neta Pro
+                Neta Solo
               </span>
-              <div>
-                <span className="text-6xl font-bold tracking-tight">$15</span>
-                <span className="text-muted text-sm"> USD / mes</span>
+              <div className="min-h-[88px] flex flex-col items-center justify-center">
+                {annual ? (
+                  <>
+                    <div>
+                      <span className="text-6xl font-bold tracking-tight">$9</span>
+                      <span className="text-muted text-sm"> USD / mes</span>
+                    </div>
+                    <p className="text-xs text-muted mt-2">
+                      Facturado anual a <span className="text-primary font-medium">$108 USD</span> · Ahorras $36 al año
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <span className="text-6xl font-bold tracking-tight">$12</span>
+                      <span className="text-muted text-sm"> USD / mes</span>
+                    </div>
+                    <p className="text-xs text-muted mt-2">Sin permanencia · Cancela cuando quieras</p>
+                  </>
+                )}
               </div>
-              <p className="text-xs text-muted mt-2">Sin permanencia · Cancela cuando quieras</p>
             </div>
 
             <hr className="border-border" />
@@ -846,7 +901,7 @@ function Pricing() {
               to="/login?signup=1"
               className="neta-btn-primary w-full flex items-center justify-center gap-2"
             >
-              Empezar 14 días gratis <ArrowRight size={16} />
+              Empezar 30 días gratis <ArrowRight size={16} />
             </Link>
             <p className="text-center text-[11px] text-muted mt-3">
               Sin tarjeta de crédito · Sin compromiso
@@ -881,7 +936,7 @@ function FinalCta() {
             to="/login?signup=1"
             className="neta-btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 text-base"
           >
-            Empezar 14 días gratis <ArrowRight size={18} />
+            Empezar 30 días gratis <ArrowRight size={18} />
           </Link>
         </Reveal>
         <Reveal delay={280}>

@@ -1,7 +1,15 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-04-30 (beta abierta — 30 días trial, Google OAuth con código, fixes mobile)
+Última actualización: 2026-05-12 (Lemon Squeezy aprobado · precio definido $12 mensual / $108 anual · ICP definido: micropigmentadora independiente que trabaja sola)
+
+---
+
+## 💰 Precio y planes (decidido 2026-05-12)
+
+- **Plan Solo (único plan activo hoy):** $12 USD/mes o $108 USD/año (~$9/mes, ahorra 25%).
+- **ICP:** Micropigmentadora **independiente que trabaja sola** (LATAM + USA hispano). No estudios con equipo.
+- **Plan Estudio (futuro, no construir aún):** ~$29/mes — multi-especialista + comisiones. Solo se construye después de validar que las independientes pagan el Solo.
 
 ---
 
@@ -36,7 +44,8 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] ~~Recuperación de contraseña~~
 - [x] ~~Modal de confirmación bonito~~
 - [ ] **Confirmación de email en producción** — el código ya está listo (pantalla 📬 + errores en español). Solo activar el toggle "Confirm email" en Supabase → Sign In / Providers cuando salga el dominio propio.
-- [ ] **Pasarela de pago (Lemon Squeezy)** — cuenta en validación. Plan técnico completo en `docs/PAYMENTS.md`. Si rechazan: Paddle es la alternativa.
+- [ ] **Pasarela de pago (Lemon Squeezy)** — ✅ cuenta aprobada (2026-05-12). Falta crear productos ($12 mensual y $108 anual) e integrar las 3 Edge Functions: checkout, portal, webhook. Plan técnico completo en `docs/PAYMENTS.md`.
+- [x] ~~**Landing reposicionada al ICP "independiente que trabaja sola"**~~ (2026-05-12) — hero, dolores y sección "Para quién" reescritos. Sección "Para quién" pasa de listar otras profesiones (lashistas, manicuristas, nutricionistas) a perfiles de la micropigmentadora independiente sola (cabina en casa, renta puesto, atiende a domicilio, recién egresada, lleva años sin claridad, sin equipo). Pricing: toggle mensual/anual ($12 / $9 efectivo). Trial unificado a 30 días en todos los CTAs. FAQ con pregunta "tengo equipo, ¿sirve?" que dirige al plan Estudio futuro.
 - [x] **Trial de 14 días** — trigger `handle_new_user` da `trial_ends_at = now() + 14 days` automáticamente. Gating funcional vía `computeAccess()`.
 - [x] **Términos y Política de Privacidad** — páginas `/terminos` y `/privacidad`, links en Login (signup) y Configuración
 - [x] **Bloqueo de acceso por suscripción vencida** — banners con CTA, `/suscribirse` pricing page, redirect desde `/suscripcion-vencida`

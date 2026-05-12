@@ -4,7 +4,9 @@
 
 ## Qué es
 
-SaaS de gestión para micropigmentadoras independientes en LATAM y USA. **$15 USD/mes** (suscripción aún no integrada). Marca de Roberto.
+SaaS de gestión para micropigmentadoras independientes en LATAM y USA. **$12 USD/mes o $108 USD/año** (~$9/mes equivalente, ahorra 25% — suscripción aún no integrada). Marca de Roberto.
+
+**ICP (cliente ideal):** Micropigmentadora **independiente que trabaja sola**. No estudios con equipo. Todo el marketing, copy y producto se direccionan a ella.
 
 - **Tagline**: "Tu negocio, claro como el agua."
 - **Logo**: `Neta.` con punto en `#E8A598`
