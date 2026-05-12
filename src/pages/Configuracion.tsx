@@ -26,6 +26,24 @@ const SECTIONS: { type: OptionType; title: string; hint: string }[] = [
   { type: 'expense_category', title: 'Categorías de gastos', hint: 'Para clasificar tus egresos' },
 ]
 
+const USAGE_MAP: Record<OptionType, { table: 'procedures' | 'expenses'; field: string; unit: [string, string] }> = {
+  procedure:        { table: 'procedures', field: 'procedure_type', unit: ['procedimiento', 'procedimientos'] },
+  payment_method:   { table: 'procedures', field: 'payment_method', unit: ['procedimiento', 'procedimientos'] },
+  client_source:    { table: 'procedures', field: 'client_source',  unit: ['procedimiento', 'procedimientos'] },
+  expense_category: { table: 'expenses',   field: 'category',       unit: ['gasto', 'gastos'] },
+}
+
+async function countOptionUsage(type: OptionType, value: string, userId: string): Promise<number | null> {
+  const cfg = USAGE_MAP[type]
+  const { count, error } = await supabase
+    .from(cfg.table)
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq(cfg.field, value)
+  if (error) return null
+  return count ?? 0
+}
+
 export default function Configuracion() {
   const { profile, updateProfile, refresh } = useProfile()
   const toast = useToast()
@@ -135,10 +153,24 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
   }
 
   async function deleteItem(opt: UserOption) {
+    if (!user) return
+    const usage = await countOptionUsage(type, opt.value, user.id)
+    const cfg = USAGE_MAP[type]
+    const recordWord = (n: number) => (n === 1 ? cfg.unit[0] : cfg.unit[1])
+
+    let message: string
+    if (usage === null) {
+      message = `¿Eliminar "${opt.value}"? Los registros que ya usan esta opción seguirán mostrándola, pero no podrás elegirla en nuevos formularios.`
+    } else if (usage === 0) {
+      message = `¿Eliminar "${opt.value}"?`
+    } else {
+      message = `"${opt.value}" se usa en ${usage} ${recordWord(usage)} registrado${usage === 1 ? '' : 's'}. Esos no se borran, seguirán mostrando "${opt.value}", pero ya no podrás elegirla en nuevos formularios.`
+    }
+
     const ok = await confirm({
       title: 'Eliminar opción',
-      message: `¿Eliminar "${opt.value}"? Los registros que ya usan esta opción seguirán mostrándola, pero no podrás elegirla en nuevos formularios.`,
-      confirmLabel: 'Eliminar',
+      message,
+      confirmLabel: usage && usage > 0 ? 'Eliminar de todos modos' : 'Eliminar',
       variant: 'danger',
     })
     if (!ok) return
