@@ -138,10 +138,9 @@ Diseño completo en `docs/ADMIN.md`.
 - [ ] Banner de cookies si se vende en EU
 - [ ] Plan de respuesta ante incidentes (incluso si es informal)
 - [ ] **Service Worker — manejo de actualizaciones**
-  - Hoy `registerType: 'autoUpdate'` aplica nuevas versiones silenciosamente, pero el usuario debe refrescar la página para verlas. Si una usuaria reporta que "no le aparece la nueva función", probablemente sea cache del SW.
-  - Pendiente: cambiar a `prompt` y mostrar un toast "Hay una nueva versión, recarga" con botón.
-  - Pendiente: definir página/estado offline (cuando no hay red y no está en cache).
-  - Pendiente: revisar runtime caching para llamadas a Supabase (ahora son `NetworkOnly`).
+  - [x] ~~Cambiar `registerType` a `prompt` y mostrar banner persistente con botón "Actualizar ahora"~~ (componente `UpdatePrompt`)
+  - [ ] Definir página/estado offline (cuando no hay red y no está en cache).
+  - [ ] Revisar runtime caching para llamadas a Supabase (ahora son `NetworkOnly`).
 
 ---
 
