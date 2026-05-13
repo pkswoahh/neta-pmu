@@ -27,8 +27,9 @@ export interface Profile {
   suspended_at: string | null
   suspended_reason: string | null
   last_seen_at: string | null
-  stripe_customer_id: string | null
-  stripe_subscription_id: string | null
+  lemon_customer_id: string | null
+  lemon_subscription_id: string | null
+  billing_plan: 'monthly' | 'annual' | null
   country: string | null
   invitation_code_used: string | null
 }
