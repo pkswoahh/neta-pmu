@@ -11,3 +11,7 @@ dev-dist
 .idea
 *.log
 *.tsbuildinfo
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
