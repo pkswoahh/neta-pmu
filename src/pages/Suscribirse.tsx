@@ -50,11 +50,7 @@ export default function Suscribirse() {
 
         <div className="neta-card space-y-6 animate-fade-in">
           <div className="text-center space-y-3">
-            <span className="inline-block bg-accent/10 text-accent text-xs font-medium px-3 py-1 rounded-full">
-              Neta Solo
-            </span>
-
-            <div className="flex items-center justify-center pt-1">
+            <div className="flex items-center justify-center">
               <div className="inline-flex bg-bg border border-border rounded-full p-1">
                 <button
                   type="button"
@@ -87,15 +83,15 @@ export default function Suscribirse() {
               </div>
             </div>
 
-            <div className="min-h-[80px] flex flex-col items-center justify-center">
+            <div className="min-h-[90px] flex flex-col items-center justify-center">
               {plan === 'annual' ? (
                 <>
                   <div>
-                    <span className="text-5xl font-bold tracking-tight">$9</span>
-                    <span className="text-muted text-sm"> USD / mes</span>
+                    <span className="text-5xl font-bold tracking-tight">$108</span>
+                    <span className="text-muted text-sm"> USD / año</span>
                   </div>
                   <p className="text-xs text-muted mt-2">
-                    Facturado anual a <span className="text-primary font-medium">$108 USD</span> · Ahorras $36
+                    Equivale a <span className="text-primary font-medium">$9 USD/mes</span> · Ahorras $36 al año
                   </p>
                 </>
               ) : (

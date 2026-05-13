@@ -859,19 +859,16 @@ function Pricing() {
               30 días gratis
             </div>
 
-            <div className="text-center pt-2 pb-4">
-              <span className="inline-block bg-accent/10 text-accent text-xs font-medium px-3 py-1 rounded-full mb-4">
-                Neta Solo
-              </span>
-              <div className="min-h-[88px] flex flex-col items-center justify-center">
+            <div className="text-center pt-4 pb-4">
+              <div className="min-h-[96px] flex flex-col items-center justify-center">
                 {annual ? (
                   <>
                     <div>
-                      <span className="text-6xl font-bold tracking-tight">$9</span>
-                      <span className="text-muted text-sm"> USD / mes</span>
+                      <span className="text-6xl font-bold tracking-tight">$108</span>
+                      <span className="text-muted text-sm"> USD / año</span>
                     </div>
                     <p className="text-xs text-muted mt-2">
-                      Facturado anual a <span className="text-primary font-medium">$108 USD</span> · Ahorras $36 al año
+                      Equivale a <span className="text-primary font-medium">$9 USD/mes</span> · Ahorras $36 al año
                     </p>
                   </>
                 ) : (
