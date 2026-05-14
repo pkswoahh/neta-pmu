@@ -28,16 +28,6 @@ export default function Onboarding() {
   const [currency, setCurrency] = useState('COP')
   const [busy, setBusy] = useState(false)
 
-  // Redimir código de invitación pendiente (flujo Google OAuth)
-  useEffect(() => {
-    if (!user) return
-    let pending: string | null = null
-    try { pending = sessionStorage.getItem('neta_pending_code') } catch {}
-    if (!pending) return
-    try { sessionStorage.removeItem('neta_pending_code') } catch {}
-    void supabase.rpc('redeem_invitation_code', { p_code: pending })
-  }, [user])
-
   if (loading) return null
   if (profile?.business_name) return <Navigate to="/dashboard" replace />
 

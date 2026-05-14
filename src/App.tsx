@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/Toast'
 import { ConfirmProvider } from '@/components/Confirm'
 import Particles from '@/components/Particles'
 import UpdatePrompt from '@/components/UpdatePrompt'
+import InvitationCodeRedeemer from '@/components/InvitationCodeRedeemer'
 import AppLayout from '@/components/AppLayout'
 import AdminLayout from '@/components/admin/AdminLayout'
 import Login, { FullCenterLoader } from '@/pages/Login'
@@ -36,6 +37,7 @@ export default function App() {
           <ProfileProvider>
             <Particles />
             <UpdatePrompt />
+            <InvitationCodeRedeemer />
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
