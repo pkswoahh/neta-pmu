@@ -73,21 +73,28 @@ export default function Login() {
           return
         }
 
+        const normalizedCode = code.trim().toUpperCase()
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { invitation_code: normalizedCode },
+          },
         })
         if (error) throw error
 
-        // Redimir el código (consume un cupo)
+        // El trigger handle_new_user ya consume el código vía metadata.
+        // Llamamos al RPC como respaldo: es idempotente (si el trigger ya
+        // lo procesó, devuelve already=true sin doble-decrementar).
         if (data.session) {
-          await supabase.rpc('redeem_invitation_code', { p_code: code })
+          await supabase.rpc('redeem_invitation_code', { p_code: normalizedCode })
         }
 
         if (!data.session) {
-          // Necesita confirmación de email — guardamos el código para redimirlo al primer login
-          try { sessionStorage.setItem('neta_pending_code', code.trim()) } catch {}
+          // Necesita confirmación de email — guardamos el código para redimirlo
+          // al primer login (caso confirm email activado).
+          try { sessionStorage.setItem('neta_pending_code', normalizedCode) } catch {}
           setPendingConfirm(true)
         } else {
           toast.show('¡Cuenta creada!', 'success')

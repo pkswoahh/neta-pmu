@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Trash2, Edit2, Check, X, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Edit2, Check, X, Loader2, CreditCard, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { stateLabel } from '@/lib/access'
 import { useToast } from '@/components/Toast'
 import { useConfirm } from '@/components/Confirm'
 import MoneyInput from '@/components/MoneyInput'
@@ -46,7 +47,7 @@ async function countOptionUsage(type: OptionType, value: string, userId: string)
 }
 
 export default function Configuracion() {
-  const { profile, updateProfile, refresh } = useProfile()
+  const { profile, access, updateProfile, refresh } = useProfile()
   const toast = useToast()
 
   const [businessName, setBusinessName] = useState(profile?.business_name ?? '')
@@ -82,6 +83,26 @@ export default function Configuracion() {
         <h1 className="text-3xl font-semibold tracking-tight">Configuración</h1>
         <p className="text-muted mt-2">Personaliza tu espacio de trabajo.</p>
       </div>
+
+      <Link
+        to="/mi-suscripcion"
+        className="neta-card flex items-center gap-4 hover:bg-surface/80 transition-colors group"
+      >
+        <div className="w-10 h-10 rounded-full bg-accent/15 text-accent flex items-center justify-center shrink-0">
+          <CreditCard size={18} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium">Mi suscripción</div>
+          <div className="text-xs text-muted mt-0.5">
+            {access.state === 'trial'
+              ? `En período de prueba${access.daysLeft !== undefined ? ` · ${access.daysLeft} ${access.daysLeft === 1 ? 'día restante' : 'días restantes'}` : ''}`
+              : access.state === 'active'
+                ? `Plan ${profile?.billing_plan === 'annual' ? 'Anual' : profile?.billing_plan === 'monthly' ? 'Mensual' : ''} · ${stateLabel(access.state)}`
+                : stateLabel(access.state)}
+          </div>
+        </div>
+        <ChevronRight size={18} className="text-muted group-hover:text-primary transition-colors shrink-0" />
+      </Link>
 
       <div className="neta-card space-y-5">
         <h2 className="text-lg font-semibold">Mi negocio</h2>

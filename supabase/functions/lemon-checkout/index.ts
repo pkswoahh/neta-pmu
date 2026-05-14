@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
 
   const variantId = body.plan === 'monthly' ? variantMonthly : variantAnnual
   const origin = req.headers.get('Origin') ?? 'https://netapmu.com'
-  const successUrl = `${origin}/dashboard?subscription=success`
+  const successUrl = `${origin}/mi-suscripcion?subscription=success`
 
   // Obtener business_name para pre-llenar
   const { data: profile } = await supabase

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { ProfileProvider, useProfile } from '@/contexts/ProfileContext'
 import { ToastProvider } from '@/components/Toast'
@@ -26,6 +26,7 @@ import Codigos from '@/pages/admin/Codigos'
 import Terminos from '@/pages/Terminos'
 import Privacidad from '@/pages/Privacidad'
 import Suscribirse from '@/pages/Suscribirse'
+import MiSuscripcion from '@/pages/MiSuscripcion'
 
 export default function App() {
   return (
@@ -61,6 +62,7 @@ export default function App() {
                 <Route path="clientes" element={<Clientes />} />
                 <Route path="gastos" element={<Gastos />} />
                 <Route path="configuracion" element={<Configuracion />} />
+                <Route path="mi-suscripcion" element={<MiSuscripcion />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -81,12 +83,15 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 function RequireAuthAndOnboarded({ children }: { children: React.ReactNode }) {
   const { user, loading: aLoading } = useAuth()
   const { profile, loading: pLoading, access } = useProfile()
+  const location = useLocation()
   if (aLoading || pLoading) return <FullCenterLoader />
   if (!user) return <Navigate to="/login" replace />
   if (!profile?.business_name) return <Navigate to="/bienvenida" replace />
 
-  // Gating de suscripción
-  if (!access.allowed) {
+  // Gating de suscripción. /mi-suscripcion es accesible siempre
+  // (la usuaria puede llegar ahí tras pagar mientras se activa, o
+  // estando vencida para ver su estado y suscribirse).
+  if (!access.allowed && location.pathname !== '/mi-suscripcion') {
     if (access.state === 'suspended') return <Navigate to="/cuenta-suspendida" replace />
     return <Navigate to="/suscripcion-vencida" replace />
   }

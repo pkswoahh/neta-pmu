@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-05-12 (Lemon Squeezy aprobado · precio definido $12 mensual / $108 anual · ICP definido: micropigmentadora independiente que trabaja sola)
+Última actualización: 2026-05-14 (Migración 009: redención atómica de código de invitación · página `/mi-suscripcion` · loader + polling post-pago · Google OAuth listo)
 
 ---
 
@@ -44,7 +44,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] ~~Recuperación de contraseña~~
 - [x] ~~Modal de confirmación bonito~~
 - [ ] **Confirmación de email en producción** — el código ya está listo (pantalla 📬 + errores en español). Solo activar el toggle "Confirm email" en Supabase → Sign In / Providers cuando salga el dominio propio.
-- [ ] **Pasarela de pago (Lemon Squeezy)** — ✅ cuenta aprobada. ✅ productos creados en Test mode ($12 mensual / $108 anual). ✅ Migración 008 escrita (rename stripe→lemon + billing_plan). ✅ Edge Functions escritas: `lemon-checkout`, `lemon-portal`, `lemon-webhook`. ✅ Página `/suscribirse` con toggle mensual/anual integrada. **Falta:** correr migración 008 en producción, guardar secrets en Supabase, deployar Edge Functions, crear webhook en Lemon Squeezy apuntando a la URL del webhook, y probar end-to-end en Test mode antes de pasar a Live.
+- [ ] **Pasarela de pago (Lemon Squeezy)** — ✅ cuenta aprobada. ✅ productos creados en Test mode ($12 mensual / $108 anual). ✅ Migración 008 escrita y corrida (rename stripe→lemon + billing_plan). ✅ Edge Functions escritas: `lemon-checkout`, `lemon-portal`, `lemon-webhook`. ✅ Página `/suscribirse` con toggle mensual/anual integrada. ✅ Test mensual y anual exitosos en Test mode. ✅ Página `/mi-suscripcion` con info del plan + botón al portal. ✅ Loader + polling post-pago. **Falta:** probar portal de cancelación, probar gating con usuaria no-admin vencida, pasar a Live mode.
 - [x] ~~**Landing reposicionada al ICP "independiente que trabaja sola"**~~ (2026-05-12) — hero, dolores y sección "Para quién" reescritos. Sección "Para quién" pasa de listar otras profesiones (lashistas, manicuristas, nutricionistas) a perfiles de la micropigmentadora independiente sola (cabina en casa, renta puesto, atiende a domicilio, recién egresada, lleva años sin claridad, sin equipo). Pricing: toggle mensual/anual ($12 / $9 efectivo). Trial unificado a 30 días en todos los CTAs. FAQ con pregunta "tengo equipo, ¿sirve?" que dirige al plan Estudio futuro.
 - [x] **Trial de 14 días** — trigger `handle_new_user` da `trial_ends_at = now() + 14 days` automáticamente. Gating funcional vía `computeAccess()`.
 - [x] **Términos y Política de Privacidad** — páginas `/terminos` y `/privacidad`, links en Login (signup) y Configuración
@@ -126,7 +126,7 @@ Diseño completo en `docs/ADMIN.md`.
 - [x] SSL activado automáticamente
 - [x] Site URL y Redirect URLs en Supabase actualizadas a `netapmu.com`
 - [x] Email de soporte — `hola@netapmu.com` via ImprovMX (reenvía a Gmail)
-- [ ] Configurar Google OAuth (Google Cloud Console + Supabase)
+- [x] Configurar Google OAuth (Google Cloud Console + Supabase)
 - [ ] Onboarding con datos demo de ejemplo (que vean la app llena) — en standby, esperando feedback real de beta
 - [x] **Dashboard vacío cálido** — cuando la cuenta no tiene ni procs ni gastos, se reemplaza el dashboard por bienvenida con CTA "Registrar mi primer cliente"
 - [x] **Botón flotante de soporte WhatsApp** — en AppLayout, abre wa.me con mensaje pre-armado que incluye la pantalla actual. Reduce fricción para feedback de beta testers.
