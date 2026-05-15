@@ -20,8 +20,11 @@ export default function SuscripcionVencida() {
               to="/suscribirse"
               className="neta-btn-primary w-full flex items-center justify-center"
             >
-              Reactivar mi cuenta — $15/mes
+              Reactivar mi cuenta
             </Link>
+            <p className="text-xs text-muted">
+              Desde $9 USD/mes con el plan anual
+            </p>
             <button
               onClick={signOut}
               className="neta-btn-ghost w-full flex items-center justify-center gap-2 text-sm"

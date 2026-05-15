@@ -21,10 +21,11 @@ export default function Terminos() {
 
       <LegalSection title="3. Precio y facturación">
         <LegalText>
-          El servicio tiene un costo de <strong className="text-primary">$15 USD al mes</strong>.
-          Al registrarte tienes un período de prueba gratuito de 14 días, sin necesidad de
-          ingresar datos de pago. Al terminar el período de prueba, deberás suscribirte para
-          seguir usando la plataforma.
+          El servicio tiene un costo de <strong className="text-primary">$12 USD al mes</strong>
+          {' '}o <strong className="text-primary">$108 USD al año</strong> (equivalente a
+          {' '}$9 USD/mes, ahorras 25%). Al registrarte tienes un período de prueba gratuito
+          {' '}de 30 días, sin necesidad de ingresar datos de pago. Al terminar el período de
+          {' '}prueba, deberás suscribirte para seguir usando la plataforma.
         </LegalText>
       </LegalSection>
 
