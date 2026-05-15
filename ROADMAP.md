@@ -1,7 +1,7 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-05-14 (Migración 009: redención atómica de código de invitación · página `/mi-suscripcion` · loader + polling post-pago · Google OAuth listo)
+Última actualización: 2026-05-15 (Validaciones Lemon Test mode completas · gating con trial vencido OK · precios actualizados en SuscripcionVencida y Terminos)
 
 ---
 
@@ -44,7 +44,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] ~~Recuperación de contraseña~~
 - [x] ~~Modal de confirmación bonito~~
 - [ ] **Confirmación de email en producción** — el código ya está listo (pantalla 📬 + errores en español). Solo activar el toggle "Confirm email" en Supabase → Sign In / Providers cuando salga el dominio propio.
-- [ ] **Pasarela de pago (Lemon Squeezy)** — ✅ cuenta aprobada. ✅ productos creados en Test mode ($12 mensual / $108 anual). ✅ Migración 008 escrita y corrida (rename stripe→lemon + billing_plan). ✅ Edge Functions escritas: `lemon-checkout`, `lemon-portal`, `lemon-webhook`. ✅ Página `/suscribirse` con toggle mensual/anual integrada. ✅ Test mensual y anual exitosos en Test mode. ✅ Página `/mi-suscripcion` con info del plan + botón al portal. ✅ Loader + polling post-pago. **Falta:** probar portal de cancelación, probar gating con usuaria no-admin vencida, pasar a Live mode.
+- [x] **Pasarela de pago (Lemon Squeezy) — Test mode completo** — ✅ cuenta aprobada · productos Test mode ($12/$108) · Migración 008 · Edge Functions desplegadas · `/suscribirse` con toggle · test mensual y anual end-to-end · `/mi-suscripcion` con info de plan · botón "Gestionar suscripción" abre portal de Lemon · loader + polling 10s post-pago · portal de cancelación validado · gating con trial vencido validado. **Próximo:** pasar a Live mode cuando haya primera clienta.
 - [x] ~~**Landing reposicionada al ICP "independiente que trabaja sola"**~~ (2026-05-12) — hero, dolores y sección "Para quién" reescritos. Sección "Para quién" pasa de listar otras profesiones (lashistas, manicuristas, nutricionistas) a perfiles de la micropigmentadora independiente sola (cabina en casa, renta puesto, atiende a domicilio, recién egresada, lleva años sin claridad, sin equipo). Pricing: toggle mensual/anual ($12 / $9 efectivo). Trial unificado a 30 días en todos los CTAs. FAQ con pregunta "tengo equipo, ¿sirve?" que dirige al plan Estudio futuro.
 - [x] **Trial de 14 días** — trigger `handle_new_user` da `trial_ends_at = now() + 14 days` automáticamente. Gating funcional vía `computeAccess()`.
 - [x] **Términos y Política de Privacidad** — páginas `/terminos` y `/privacidad`, links en Login (signup) y Configuración
@@ -138,6 +138,8 @@ Diseño completo en `docs/ADMIN.md`.
 - [ ] Analytics (Plausible / PostHog) para entender uso real
 - [ ] Sentry o similar para tracking de errores
 - [ ] SMTP personalizado (Resend) — enviar desde hola@netapmu.com en lugar de mail.supabase.io
+- [ ] **Personalizar template "Confirm signup"** en Supabase → Auth → Email Templates (plantilla lista pasada a Roberto el 2026-05-15, falta pegarla en el panel)
+- [ ] **Subir polling post-pago** de 10s a 30-45s con backoff (el webhook de Lemon tardó 50s en una prueba, banner amber se mostró innecesariamente)
 
 ---
 
