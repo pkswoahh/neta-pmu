@@ -150,7 +150,7 @@ export default function Configuracion() {
             <MoneyInput value={goal} onChange={setGoal} currency={currency} />
           </div>
         </div>
-        <div className="flex justify-end pt-1">
+        <div className="flex justify-center pt-1">
           <button onClick={saveProfile} disabled={saving} className="neta-btn-primary px-8 flex items-center justify-center gap-2">
             {saving && <Loader2 size={16} className="animate-spin" />}
             Guardar
