@@ -1,7 +1,23 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-05-15 (Validaciones Lemon Test mode completas · gating con trial vencido OK · precios actualizados en SuscripcionVencida y Terminos)
+Última actualización: 2026-06-07 (Datos demo · gráfico tendencia · tarjeta detalle · filtros de periodo Hoy/Semana/Mes/Rango · cliente inteligente · fix constelaciones · 6 ajustes internos)
+
+## 🗓️ Sesión 2026-06-07 — completado
+
+- [x] Polling post-pago 10s → ~48s con intervalos crecientes
+- [x] Datos de ejemplo opt-in/reversible (`is_demo`, migración 010) + banner global
+- [x] Gráfico de tendencia de ingresos (6 meses) en Dashboard
+- [x] 6 ajustes internos: Google pide código en modal · quitado botón flotante WhatsApp · Guardar dentro de "Mi negocio" y centrado · aviso al cambiar moneda · subtítulo procedimientos · autocomplete off en campos
+- [x] Fix constelaciones en Safari (movimiento por tiempo + resize no reconstruye por barra de URL)
+- [x] Colores en lista de Procedimientos (monto verde, tipo rosado)
+- [x] Tarjeta de detalle al tocar un procedimiento (`ProcedureDetailModal`)
+- [x] Filtro de periodo Hoy/Semana/Mes/Rango en Procedimientos y Gastos (`PeriodSelector`) + buscador alineado al Select
+- [x] Campo de nombre inteligente con autocompletar de clientes (`ClientNameInput`) — mide nuevo/frecuente por consistencia de nombres
+
+### ⏳ PENDIENTE (siguiente sesión)
+- [ ] **Rangos de fecha en el Dashboard** — reutilizar `PeriodSelector`. Decidido: comparar "vs periodo anterior" (periodo equivalente previo) y ocultar la tarjeta de Meta mensual fuera de "Mes". El gráfico de 6 meses no se toca.
+
 
 ---
 
