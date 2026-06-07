@@ -18,6 +18,8 @@ export default function MoneyInput({ value, onChange, currency, placeholder = '0
       <input
         type="text"
         inputMode="numeric"
+        autoComplete="off"
+        autoCorrect="off"
         className="neta-input pl-10"
         value={display}
         placeholder={placeholder}

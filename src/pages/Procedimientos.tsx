@@ -132,6 +132,8 @@ export default function Procedimientos() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Buscar cliente o procedimiento"
+              autoComplete="off"
+              autoCorrect="off"
               className="neta-input pl-9 pr-9 py-2.5 text-sm"
             />
             {query && (
@@ -275,12 +277,12 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
         </div>
         <div>
           <label className="neta-label">Nombre del cliente</label>
-          <input required value={clientName} onChange={e => setClientName(e.target.value)} className="neta-input" placeholder="Ej. María Pérez" />
+          <input required value={clientName} onChange={e => setClientName(e.target.value)} autoComplete="off" autoCorrect="off" className="neta-input" placeholder="Ej. María Pérez" />
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="neta-label">Celular (opcional)</label>
-            <input type="tel" value={clientPhone} onChange={e => setClientPhone(e.target.value)} className="neta-input" placeholder="Opcional" />
+            <input type="tel" value={clientPhone} onChange={e => setClientPhone(e.target.value)} autoComplete="off" className="neta-input" placeholder="Opcional" />
           </div>
           <div>
             <label className="neta-label">Valor cobrado</label>
@@ -303,7 +305,7 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
         </div>
         <div>
           <label className="neta-label">Observaciones (opcional)</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} className="neta-input min-h-[80px] resize-none" />
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} autoComplete="off" className="neta-input min-h-[80px] resize-none" />
         </div>
       </form>
     </Modal>

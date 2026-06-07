@@ -22,7 +22,7 @@ const CURRENCIES = [
 ]
 
 const SECTIONS: { type: OptionType; title: string; hint: string }[] = [
-  { type: 'procedure', title: 'Mis procedimientos', hint: 'Los servicios que ofreces' },
+  { type: 'procedure', title: 'Mis procedimientos', hint: 'Registra todos los servicios que ofreces' },
   { type: 'payment_method', title: 'Métodos de pago', hint: 'Cómo te pagan tus clientes' },
   { type: 'client_source', title: 'Origen del cliente', hint: 'De dónde llegan tus clientes' },
   { type: 'expense_category', title: 'Categorías de gastos', hint: 'Para clasificar tus egresos' },
@@ -49,6 +49,7 @@ async function countOptionUsage(type: OptionType, value: string, userId: string)
 export default function Configuracion() {
   const { profile, access, updateProfile, refresh } = useProfile()
   const toast = useToast()
+  const confirm = useConfirm()
 
   const [businessName, setBusinessName] = useState(profile?.business_name ?? '')
   const [currency, setCurrency] = useState(profile?.currency ?? 'COP')
@@ -62,6 +63,24 @@ export default function Configuracion() {
   }, [profile])
 
   async function saveProfile() {
+    // Cambiar de moneda no convierte los montos guardados: solo cambia
+    // el símbolo. Si ya hay registros, lo avisamos para evitar confusión.
+    if (profile && currency !== profile.currency) {
+      const [{ count: pc }, { count: ec }] = await Promise.all([
+        supabase.from('procedures').select('id', { count: 'exact', head: true }).eq('user_id', profile.id),
+        supabase.from('expenses').select('id', { count: 'exact', head: true }).eq('user_id', profile.id),
+      ])
+      const total = (pc ?? 0) + (ec ?? 0)
+      if (total > 0) {
+        const ok = await confirm({
+          title: 'Cambiar de moneda',
+          message: `Tienes ${total} registro${total === 1 ? '' : 's'} guardado${total === 1 ? '' : 's'}. Cambiar de moneda no convierte esos montos: solo cambia el símbolo que se muestra. Por ejemplo, 500.000 seguirá siendo 500.000, pero ahora con el nuevo símbolo. ¿Quieres continuar?`,
+          confirmLabel: 'Sí, cambiar moneda',
+          variant: 'danger',
+        })
+        if (!ok) return
+      }
+    }
     setSaving(true)
     try {
       await updateProfile({
@@ -112,6 +131,8 @@ export default function Configuracion() {
             value={businessName}
             onChange={e => setBusinessName(e.target.value)}
             placeholder="Ej. Lina PMU Studio"
+            autoComplete="off"
+            autoCorrect="off"
             className="neta-input"
           />
         </div>
@@ -129,18 +150,17 @@ export default function Configuracion() {
             <MoneyInput value={goal} onChange={setGoal} currency={currency} />
           </div>
         </div>
+        <div className="flex justify-end pt-1">
+          <button onClick={saveProfile} disabled={saving} className="neta-btn-primary px-8 flex items-center justify-center gap-2">
+            {saving && <Loader2 size={16} className="animate-spin" />}
+            Guardar
+          </button>
+        </div>
       </div>
 
       {SECTIONS.map(s => (
         <OptionsSection key={s.type} type={s.type} title={s.title} hint={s.hint} onChanged={refresh} />
       ))}
-
-      <div className="sticky bottom-20 md:bottom-6 z-10">
-        <button onClick={saveProfile} disabled={saving} className="neta-btn-primary w-full md:w-auto md:px-10 flex items-center justify-center gap-2 shadow-2xl">
-          {saving && <Loader2 size={16} className="animate-spin" />}
-          Guardar
-        </button>
-      </div>
 
       <p className="text-center text-xs text-muted pb-2">
         <Link to="/terminos" className="hover:text-primary transition-colors">Términos de Servicio</Link>
@@ -232,6 +252,8 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
                   value={editingValue}
                   onChange={e => setEditingValue(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') saveEdit(opt); if (e.key === 'Escape') setEditingId(null) }}
+                  autoComplete="off"
+                  autoCorrect="off"
                   className="flex-1 bg-transparent focus:outline-none text-sm"
                 />
                 <button onClick={() => saveEdit(opt)} className="text-positive p-2 hover:bg-positive/10 rounded-lg"><Check size={16} /></button>
@@ -258,6 +280,8 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
           onChange={e => setAdding(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') addItem() }}
           placeholder="Agregar nuevo"
+          autoComplete="off"
+          autoCorrect="off"
           className="neta-input flex-1"
         />
         <button onClick={addItem} disabled={!adding.trim()} className="neta-btn-primary px-4 flex items-center gap-1">

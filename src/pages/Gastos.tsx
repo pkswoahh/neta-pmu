@@ -126,6 +126,8 @@ export default function Gastos() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Buscar descripción o categoría"
+              autoComplete="off"
+              autoCorrect="off"
               className="neta-input pl-9 pr-9 py-2.5 text-sm"
             />
             {query && (
@@ -257,7 +259,7 @@ function ExpenseForm({ editing, onClose, onSaved, categories, currency }: FormPr
         </div>
         <div>
           <label className="neta-label">Descripción</label>
-          <input required value={description} onChange={e => setDescription(e.target.value)} className="neta-input" placeholder="Ej. Pigmento Permablend" />
+          <input required value={description} onChange={e => setDescription(e.target.value)} autoComplete="off" autoCorrect="off" className="neta-input" placeholder="Ej. Pigmento Permablend" />
         </div>
         <div>
           <label className="neta-label">Valor</label>
@@ -265,7 +267,7 @@ function ExpenseForm({ editing, onClose, onSaved, categories, currency }: FormPr
         </div>
         <div>
           <label className="neta-label">Observaciones (opcional)</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} className="neta-input min-h-[80px] resize-none" />
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} autoComplete="off" className="neta-input min-h-[80px] resize-none" />
         </div>
       </form>
     </Modal>

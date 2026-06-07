@@ -30,6 +30,7 @@ export default function Login() {
   const [code, setCode] = useState(params.get('code') ?? '')
   const [busy, setBusy] = useState(false)
   const [showReset, setShowReset] = useState(false)
+  const [showGoogleCode, setShowGoogleCode] = useState(false)
   const [pendingConfirm, setPendingConfirm] = useState(false)
 
   // Si llega con ?signup=1 desde la landing, abrimos signup directo
@@ -98,32 +99,12 @@ export default function Login() {
   }
 
   async function handleGoogle() {
+    // En registro pedimos el código en un modal antes de lanzar Google.
     if (mode === 'signup') {
-      if (!code.trim()) {
-        toast.show('Ingresa tu código de acceso primero.', 'error')
-        return
-      }
-      setBusy(true)
-      try {
-        const { data: validation, error: vErr } = await supabase.rpc('validate_invitation_code', {
-          p_code: code,
-        })
-        if (vErr) throw vErr
-        const v = validation as { valid: boolean; reason?: string }
-        if (!v.valid) {
-          toast.show(CODE_REASON_MAP[v.reason ?? 'empty'] ?? 'Código no válido', 'error')
-          setBusy(false)
-          return
-        }
-        try { sessionStorage.setItem('neta_pending_code', code.trim().toUpperCase()) } catch {}
-      } catch (err: any) {
-        toast.show(translateError(err, 'Error validando el código'), 'error')
-        setBusy(false)
-        return
-      }
-    } else {
-      setBusy(true)
+      setShowGoogleCode(true)
+      return
     }
+    setBusy(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
@@ -280,7 +261,85 @@ export default function Login() {
       </div>
 
       {showReset && <ResetPasswordModal initialEmail={email} onClose={() => setShowReset(false)} />}
+      {showGoogleCode && <GoogleCodeModal initialCode={code} onClose={() => setShowGoogleCode(false)} />}
     </div>
+  )
+}
+
+function GoogleCodeModal({ initialCode, onClose }: { initialCode: string; onClose: () => void }) {
+  const toast = useToast()
+  const [code, setCode] = useState(initialCode)
+  const [busy, setBusy] = useState(false)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    try {
+      const { data: validation, error: vErr } = await supabase.rpc('validate_invitation_code', { p_code: code })
+      if (vErr) throw vErr
+      const v = validation as { valid: boolean; reason?: string }
+      if (!v.valid) {
+        toast.show(CODE_REASON_MAP[v.reason ?? 'empty'] ?? 'Código no válido', 'error')
+        setBusy(false)
+        return
+      }
+      // Guardamos el código para redimirlo al volver del redirect de Google.
+      try { sessionStorage.setItem('neta_pending_code', code.trim().toUpperCase()) } catch {}
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin },
+      })
+      if (error) {
+        toast.show(translateError(error), 'error')
+        setBusy(false)
+      }
+      // Si todo va bien, el navegador redirige a Google.
+    } catch (err: any) {
+      toast.show(translateError(err, 'Error validando el código'), 'error')
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      open
+      title="Crear cuenta con Google"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose} className="neta-btn-ghost">Cancelar</button>
+          <button type="submit" form="google-code-form" disabled={busy} className="neta-btn-primary flex items-center gap-2">
+            {busy && <Loader2 size={16} className="animate-spin" />}
+            Continuar con Google
+          </button>
+        </>
+      }
+    >
+      <form id="google-code-form" onSubmit={submit} className="space-y-4">
+        <p className="text-sm text-muted leading-relaxed">
+          Neta está en beta cerrada. Ingresa tu código de acceso para crear tu cuenta con Google.
+        </p>
+        <div>
+          <label className="neta-label">Código de acceso</label>
+          <div className="relative">
+            <KeyRound size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+            <input
+              type="text"
+              required
+              autoFocus
+              value={code}
+              onChange={e => setCode(e.target.value.toUpperCase())}
+              placeholder="Ej. NETABETA"
+              autoCapitalize="characters"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              className="neta-input pl-10 tracking-wider uppercase"
+            />
+          </div>
+        </div>
+      </form>
+    </Modal>
   )
 }
 
