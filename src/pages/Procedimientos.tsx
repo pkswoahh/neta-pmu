@@ -183,10 +183,12 @@ export default function Procedimientos() {
                   </button>
                   <span className="text-xs text-muted">{relativeDate(p.date)}</span>
                 </div>
-                <div className="text-sm text-muted truncate">{p.procedure_type} · {p.payment_method}</div>
+                <div className="text-sm text-muted truncate">
+                  <span className="text-accent font-medium">{p.procedure_type}</span> · {p.payment_method}
+                </div>
               </div>
               <div className="text-right shrink-0">
-                <div className="font-semibold">{formatMoney(Number(p.amount), currency)}</div>
+                <div className="font-semibold text-positive">{formatMoney(Number(p.amount), currency)}</div>
               </div>
               <div className="flex items-center gap-1">
                 <button onClick={() => { setEditing(p); setShowForm(true) }} className="text-muted hover:text-primary p-2 rounded-lg"><Edit2 size={15} /></button>

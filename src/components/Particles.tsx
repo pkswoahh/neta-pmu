@@ -23,6 +23,8 @@ export default function Particles() {
     let dpr = Math.min(window.devicePixelRatio || 1, 2)
     let w = 0
     let h = 0
+    let lastW = -1
+    let lastTime = performance.now()
     let dots: Dot[] = []
     let mouseX = -9999
     let mouseY = -9999
@@ -40,7 +42,13 @@ export default function Particles() {
       canvas.style.width = `${w}px`
       canvas.style.height = `${h}px`
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
-      buildDots()
+      // Solo reconstruimos las partículas cuando cambia el ANCHO (rotación,
+      // cambio de ventana). En iOS, mostrar/ocultar la barra de Safari al
+      // hacer scroll cambia solo el ALTO: eso ya no causa el salto brusco.
+      if (Math.abs(w - lastW) > 1) {
+        lastW = w
+        buildDots()
+      }
     }
 
     function buildDots() {
@@ -61,13 +69,18 @@ export default function Particles() {
       }
     }
 
-    function step() {
+    function step(now: number) {
+      // Movimiento basado en tiempo: a 120Hz no corre al doble que a 60Hz.
+      // El tope (2) evita el "estallido" cuando iOS pausa la animación
+      // durante el scroll y luego la reanuda con un delta enorme.
+      const dt = Math.min((now - lastTime) / 16.667, 2)
+      lastTime = now
       ctx!.clearRect(0, 0, w, h)
 
       for (let i = 0; i < dots.length; i++) {
         const d = dots[i]
-        d.x += d.vx
-        d.y += d.vy
+        d.x += d.vx * dt
+        d.y += d.vy * dt
         if (d.x < -10) d.x = w + 10
         if (d.x > w + 10) d.x = -10
         if (d.y < -10) d.y = h + 10
