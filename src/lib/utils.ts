@@ -68,6 +68,12 @@ export function monthLabel(yyyymm: string): string {
   return `${months[m - 1]} ${y}`
 }
 
+export function monthShort(yyyymm: string): string {
+  const [, m] = yyyymm.split('-').map(Number)
+  const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+  return months[m - 1] ?? ''
+}
+
 export function shiftMonth(yyyymm: string, delta: number): string {
   const [y, m] = yyyymm.split('-').map(Number)
   const d = new Date(Date.UTC(y, m - 1 + delta, 1))

@@ -10,7 +10,7 @@ import MoneyInput from '@/components/MoneyInput'
 import { DashboardSkeleton } from '@/components/Skeleton'
 import { seedDemoData } from '@/lib/demo'
 import { translateError } from '@/lib/errors'
-import { clientKey, currentMonth, formatMoney, monthLabel, monthRange, shiftMonth } from '@/lib/utils'
+import { clientKey, cn, currentMonth, formatMoney, monthLabel, monthRange, monthShort, shiftMonth } from '@/lib/utils'
 import type { Expense, Procedure } from '@/types/database'
 
 export default function Dashboard() {
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [historyNames, setHistoryNames] = useState<Map<string, string>>(new Map())
   const [totalProcCount, setTotalProcCount] = useState(0)
   const [totalExpenseCount, setTotalExpenseCount] = useState(0)
+  const [trend, setTrend] = useState<{ key: string; income: number }[]>([])
 
   useEffect(() => {
     if (!user) return
@@ -64,6 +65,33 @@ export default function Dashboard() {
     })()
     return () => { cancelled = true }
   }, [user, month])
+
+  // Tendencia de los últimos 6 meses (anclada al mes actual, no al
+  // seleccionado: es una vista estable de historia reciente).
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    ;(async () => {
+      const now = currentMonth()
+      const keys = Array.from({ length: 6 }, (_, i) => shiftMonth(now, -(5 - i)))
+      const { start } = monthRange(keys[0])
+      const { end } = monthRange(keys[5])
+      const { data } = await supabase
+        .from('procedures')
+        .select('amount,date')
+        .eq('user_id', user.id)
+        .gte('date', start)
+        .lt('date', end)
+      if (cancelled) return
+      const byMonth = new Map<string, number>(keys.map(k => [k, 0]))
+      ;(data ?? []).forEach((row: any) => {
+        const key = String(row.date).slice(0, 7)
+        if (byMonth.has(key)) byMonth.set(key, (byMonth.get(key) ?? 0) + Number(row.amount))
+      })
+      setTrend(keys.map(k => ({ key: k, income: byMonth.get(k) ?? 0 })))
+    })()
+    return () => { cancelled = true }
+  }, [user])
 
   const isEmptyAccount = totalProcCount === 0 && totalExpenseCount === 0
 
@@ -206,6 +234,8 @@ export default function Dashboard() {
             />
           </div>
 
+          <TrendCard trend={trend} currency={currency} selected={month} onSelect={setMonth} />
+
           <BreakdownCard title="Clientes por origen" items={sourceBreakdown} colorBar />
           <BreakdownCard title="Procedimientos por tipo" items={procBreakdown} />
           <BreakdownCard title="Ingresos por método de pago" items={paymentBreakdown} valueAsMoney currency={currency} />
@@ -302,6 +332,58 @@ function SummaryCard({
           {d.pct >= 0 ? '+' : ''}{d.pct}% vs {prevLabel}
         </div>
       )}
+    </div>
+  )
+}
+
+function TrendCard({ trend, currency, selected, onSelect }: {
+  trend: { key: string; income: number }[]
+  currency: string
+  selected: string
+  onSelect: (key: string) => void
+}) {
+  if (trend.length === 0) return null
+  const max = Math.max(...trend.map(t => t.income), 0)
+  const headline = trend.find(t => t.key === selected) ?? trend[trend.length - 1]
+
+  return (
+    <div className="neta-card">
+      <div className="flex items-baseline justify-between gap-3 mb-1">
+        <h3 className="text-base font-semibold">Tendencia de ingresos</h3>
+        <span className="text-xs text-muted">Últimos 6 meses</span>
+      </div>
+      <p className="text-sm text-muted mb-5">
+        {monthLabel(headline.key)}:{' '}
+        <span className="text-primary font-semibold">{formatMoney(headline.income, currency)}</span>
+      </p>
+
+      <div className="flex items-stretch gap-2 h-32">
+        {trend.map(t => {
+          const pct = max > 0 ? (t.income / max) * 100 : 0
+          const isSel = t.key === selected
+          return (
+            <button
+              key={t.key}
+              onClick={() => onSelect(t.key)}
+              className="flex-1 h-full flex flex-col items-center group"
+              aria-label={`${monthLabel(t.key)}: ${formatMoney(t.income, currency)}`}
+            >
+              <div className="flex-1 w-full flex items-end justify-center min-h-0">
+                <div
+                  className={cn(
+                    'w-full max-w-[2.75rem] rounded-t-md transition-all duration-500',
+                    isSel ? 'bg-accent' : 'bg-surface group-hover:bg-accent/40',
+                  )}
+                  style={{ height: `${t.income > 0 ? Math.max(pct, 5) : 2}%` }}
+                />
+              </div>
+              <span className={cn('text-[11px] mt-2 transition-colors', isSel ? 'text-accent font-medium' : 'text-muted')}>
+                {monthShort(t.key)}
+              </span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
