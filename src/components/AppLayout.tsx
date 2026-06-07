@@ -1,9 +1,14 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock, Wand2, Loader2 } from 'lucide-react'
 import Logo from './Logo'
 import SupportButton from './SupportButton'
+import { useConfirm } from './Confirm'
+import { useToast } from './Toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
+import { clearDemoData, hasDemoData } from '@/lib/demo'
+import { translateError } from '@/lib/errors'
 import { cn, shortDate } from '@/lib/utils'
 
 const tabs = [
@@ -100,6 +105,7 @@ export default function AppLayout() {
         </header>
 
         <AccessBanner />
+        <DemoBanner />
 
         {/* Área de contenido con scroll interno */}
         <main className="flex-1 overflow-y-auto min-h-0">
@@ -180,4 +186,55 @@ function AccessBanner() {
     )
   }
   return null
+}
+
+function DemoBanner() {
+  const { user } = useAuth()
+  const confirm = useConfirm()
+  const toast = useToast()
+  const [hasDemo, setHasDemo] = useState(false)
+  const [clearing, setClearing] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    hasDemoData(user.id).then(v => { if (!cancelled) setHasDemo(v) }).catch(() => {})
+    return () => { cancelled = true }
+  }, [user])
+
+  if (!hasDemo || !user) return null
+
+  async function clear() {
+    const ok = await confirm({
+      title: 'Empezar de cero',
+      message: 'Vamos a borrar los datos de ejemplo para dejar tu cuenta limpia. Tus datos reales (si registraste alguno) no se tocan.',
+      confirmLabel: 'Borrar ejemplo',
+      variant: 'danger',
+    })
+    if (!ok) return
+    setClearing(true)
+    try {
+      await clearDemoData(user!.id)
+      window.location.assign('/dashboard')
+    } catch (e: any) {
+      toast.show(translateError(e, 'No pudimos borrar los datos de ejemplo.'), 'error')
+      setClearing(false)
+    }
+  }
+
+  return (
+    <div className="bg-gold/10 border-b border-gold/20 px-5 md:px-10 py-2.5 text-sm flex items-center justify-between gap-2 text-gold">
+      <span className="flex items-center gap-2">
+        <Wand2 size={14} />
+        Estás viendo datos de ejemplo.
+      </span>
+      <button
+        onClick={clear}
+        disabled={clearing}
+        className="font-medium underline underline-offset-2 whitespace-nowrap shrink-0 inline-flex items-center gap-1.5 hover:text-primary disabled:opacity-60"
+      >
+        {clearing ? <><Loader2 size={13} className="animate-spin" /> Borrando…</> : <>Empezar de cero →</>}
+      </button>
+    </div>
+  )
 }

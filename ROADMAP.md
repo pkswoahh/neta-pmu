@@ -127,7 +127,7 @@ Diseño completo en `docs/ADMIN.md`.
 - [x] Site URL y Redirect URLs en Supabase actualizadas a `netapmu.com`
 - [x] Email de soporte — `hola@netapmu.com` via ImprovMX (reenvía a Gmail)
 - [x] Configurar Google OAuth (Google Cloud Console + Supabase)
-- [ ] Onboarding con datos demo de ejemplo (que vean la app llena) — en standby, esperando feedback real de beta
+- [x] **Onboarding con datos demo de ejemplo** (que vean la app llena) — opt-in y reversible. Botón "Explorar con datos de ejemplo" en el dashboard vacío siembra ~11 procedimientos + 7 gastos (marcados `is_demo`, montos escalados a la moneda). Banner global "Estás viendo datos de ejemplo · Empezar de cero" borra solo lo demo. Requiere correr migración 010.
 - [x] **Dashboard vacío cálido** — cuando la cuenta no tiene ni procs ni gastos, se reemplaza el dashboard por bienvenida con CTA "Registrar mi primer cliente"
 - [x] **Botón flotante de soporte WhatsApp** — en AppLayout, abre wa.me con mensaje pre-armado que incluye la pantalla actual. Reduce fricción para feedback de beta testers.
 - [x] **Página de marketing / landing** — pública en `/`, app interna en `/dashboard`. Mockup inline del Dashboard, FAQ, dolores, beneficios, prueba social, animaciones al scroll.

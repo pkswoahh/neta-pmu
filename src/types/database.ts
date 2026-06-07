@@ -65,6 +65,7 @@ export interface Procedure {
   client_source: string
   notes: string | null
   created_at: string
+  is_demo: boolean
 }
 
 export interface Expense {
@@ -76,6 +77,7 @@ export interface Expense {
   amount: number
   notes: string | null
   created_at: string
+  is_demo: boolean
 }
 
 export interface AdminAuditLog {

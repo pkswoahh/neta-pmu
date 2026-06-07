@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X, Sparkles, ArrowRight, Settings } from 'lucide-react'
+import { TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X, Sparkles, ArrowRight, Settings, Wand2, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
+import { useToast } from '@/components/Toast'
 import MonthSelector from '@/components/MonthSelector'
 import MoneyInput from '@/components/MoneyInput'
 import { DashboardSkeleton } from '@/components/Skeleton'
+import { seedDemoData } from '@/lib/demo'
+import { translateError } from '@/lib/errors'
 import { clientKey, currentMonth, formatMoney, monthLabel, monthRange, shiftMonth } from '@/lib/utils'
 import type { Expense, Procedure } from '@/types/database'
 
@@ -111,7 +114,13 @@ export default function Dashboard() {
   const prevLabel = monthLabel(shiftMonth(month, -1))
 
   if (!loading && isEmptyAccount) {
-    return <WelcomeEmptyState businessName={profile?.business_name ?? null} />
+    return (
+      <WelcomeEmptyState
+        businessName={profile?.business_name ?? null}
+        userId={user?.id ?? null}
+        currency={currency}
+      />
+    )
   }
 
   return (
@@ -207,8 +216,25 @@ export default function Dashboard() {
   )
 }
 
-function WelcomeEmptyState({ businessName }: { businessName: string | null }) {
+function WelcomeEmptyState({ businessName, userId, currency }: { businessName: string | null; userId: string | null; currency: string }) {
   const firstName = businessName?.split(' ')[0] ?? null
+  const toast = useToast()
+  const [seeding, setSeeding] = useState(false)
+
+  async function exploreDemo() {
+    if (!userId || seeding) return
+    setSeeding(true)
+    try {
+      await seedDemoData(userId, currency)
+      // Recarga limpia: el dashboard se repinta lleno y aparece el
+      // banner de "modo demo" en toda la app.
+      window.location.assign('/dashboard')
+    } catch (e: any) {
+      toast.show(translateError(e, 'No pudimos cargar los datos de ejemplo.'), 'error')
+      setSeeding(false)
+    }
+  }
+
   return (
     <div className="animate-fade-in flex items-center justify-center min-h-[70vh] md:min-h-[80vh] px-2">
       <div className="w-full max-w-md text-center">
@@ -232,13 +258,19 @@ function WelcomeEmptyState({ businessName }: { businessName: string | null }) {
         </Link>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-2 justify-center text-sm">
-          <Link to="/configuracion" className="text-muted hover:text-primary transition-colors inline-flex items-center justify-center gap-1.5">
-            <Settings size={14} /> Personalizar mis opciones primero
-          </Link>
+          <button
+            onClick={exploreDemo}
+            disabled={seeding || !userId}
+            className="text-accent hover:text-primary transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-60"
+          >
+            {seeding
+              ? <><Loader2 size={14} className="animate-spin" /> Cargando ejemplo…</>
+              : <><Wand2 size={14} /> Explorar con datos de ejemplo</>}
+          </button>
         </div>
 
         <p className="text-xs text-muted mt-10 leading-relaxed max-w-sm mx-auto">
-          Tip: en <span className="text-primary">Configuración</span> puedes editar tus procedimientos, métodos de pago y categorías de gastos.
+          Te mostramos cómo se ve Neta llena. Podrás borrar el ejemplo de un clic cuando quieras.
         </p>
       </div>
     </div>
