@@ -8,11 +8,11 @@ import { useToast } from '@/components/Toast'
 import { useConfirm } from '@/components/Confirm'
 import Modal from '@/components/Modal'
 import MoneyInput from '@/components/MoneyInput'
-import MonthSelector from '@/components/MonthSelector'
+import PeriodSelector from '@/components/PeriodSelector'
 import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { ListSkeleton } from '@/components/Skeleton'
-import { clientKey, currentMonth, downloadCSV, formatMoney, monthRange, relativeDate, shortDate, todayISO } from '@/lib/utils'
+import { clientKey, defaultPeriod, downloadCSV, formatMoney, periodRange, periodSlug, relativeDate, shortDate, todayISO, type Period } from '@/lib/utils'
 import type { Expense } from '@/types/database'
 
 export default function Gastos() {
@@ -21,7 +21,7 @@ export default function Gastos() {
   const toast = useToast()
   const confirm = useConfirm()
 
-  const [month, setMonth] = useState(currentMonth())
+  const [period, setPeriod] = useState<Period>(defaultPeriod())
   const [items, setItems] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -32,7 +32,7 @@ export default function Gastos() {
   async function load() {
     if (!user) return
     setLoading(true)
-    const { start, end } = monthRange(month)
+    const { start, end } = periodRange(period)
     const { data, error } = await supabase
       .from('expenses')
       .select('*')
@@ -46,7 +46,7 @@ export default function Gastos() {
     setLoading(false)
   }
 
-  useEffect(() => { void load() }, [user, month])
+  useEffect(() => { void load() }, [user, period])
 
   async function deleteItem(g: Expense) {
     const ok = await confirm({
@@ -89,7 +89,7 @@ export default function Gastos() {
         Valor: Number(g.amount),
         Observaciones: g.notes ?? '',
       })),
-      `neta-gastos-${month}.csv`,
+      `neta-gastos-${periodSlug(period)}.csv`,
     )
     toast.show('Descargando CSV', 'success')
   }
@@ -107,17 +107,21 @@ export default function Gastos() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <MonthSelector value={month} onChange={setMonth} />
-          <div className="flex-1" />
-          <button onClick={handleExport} className="neta-btn-ghost px-3 py-2.5 flex items-center gap-1.5 text-sm" title="Exportar CSV">
-            <Download size={15} />
-            <span className="hidden sm:inline">CSV</span>
-          </button>
-          <button onClick={() => { setEditing(null); setShowForm(true) }} className="md:hidden neta-btn-primary px-4 py-2.5 text-sm flex items-center gap-1.5">
-            <Plus size={16} />
-          </button>
-        </div>
+        <PeriodSelector
+          value={period}
+          onChange={setPeriod}
+          trailing={
+            <>
+              <button onClick={handleExport} className="neta-btn-ghost px-3 py-2.5 flex items-center gap-1.5 text-sm shrink-0" title="Exportar CSV">
+                <Download size={15} />
+                <span className="hidden sm:inline">CSV</span>
+              </button>
+              <button onClick={() => { setEditing(null); setShowForm(true) }} className="md:hidden neta-btn-primary px-4 py-2.5 text-sm flex items-center gap-1.5 shrink-0" aria-label="Nuevo gasto">
+                <Plus size={16} />
+              </button>
+            </>
+          }
+        />
 
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -128,7 +132,7 @@ export default function Gastos() {
               placeholder="Buscar descripción o categoría"
               autoComplete="off"
               autoCorrect="off"
-              className="neta-input pl-9 pr-9 py-2.5 text-sm"
+              className="neta-input pl-9 pr-9"
             />
             {query && (
               <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary">
@@ -160,7 +164,7 @@ export default function Gastos() {
         <ListSkeleton rows={5} />
       ) : items.length === 0 ? (
         <div className="neta-card">
-          <Empty icon={<Wallet size={32} />} title="Aún no hay gastos este mes" hint="Toca «+» para registrar el primero." />
+          <Empty icon={<Wallet size={32} />} title="Aún no hay gastos en este periodo" hint="Toca «+» para registrar el primero, o cambia el periodo arriba." />
         </div>
       ) : filtered.length === 0 ? (
         <div className="neta-card">

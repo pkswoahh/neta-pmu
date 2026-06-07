@@ -80,6 +80,55 @@ export function shiftMonth(yyyymm: string, delta: number): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
 }
 
+// ── Periodos (Hoy / Semana / Mes / Rango) ──────────────────────────
+export type PeriodKind = 'today' | 'week' | 'month' | 'range'
+export interface Period { kind: PeriodKind; month: string; from: string; to: string }
+
+export function defaultPeriod(): Period {
+  return { kind: 'month', month: currentMonth(), from: todayISO(), to: todayISO() }
+}
+
+export function addDaysISO(iso: string, n: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
+}
+
+// Devuelve el rango [start, end) — end exclusivo, para usar con gte/lt.
+export function periodRange(p: Period): { start: string; end: string } {
+  if (p.kind === 'today') {
+    const start = todayISO()
+    return { start, end: addDaysISO(start, 1) }
+  }
+  if (p.kind === 'week') {
+    const today = todayISO()
+    const [y, m, d] = today.split('-').map(Number)
+    const dow = (new Date(y, m - 1, d).getDay() + 6) % 7 // 0 = lunes
+    const start = addDaysISO(today, -dow)
+    return { start, end: addDaysISO(start, 7) }
+  }
+  if (p.kind === 'range') {
+    const lo = p.from <= p.to ? p.from : p.to
+    const hi = p.from <= p.to ? p.to : p.from
+    return { start: lo, end: addDaysISO(hi, 1) }
+  }
+  return monthRange(p.month)
+}
+
+export function periodLabel(p: Period): string {
+  if (p.kind === 'today') return 'Hoy'
+  if (p.kind === 'week') return 'Esta semana'
+  if (p.kind === 'range') return `${shortDate(p.from)} – ${shortDate(p.to)}`
+  return monthLabel(p.month)
+}
+
+// Slug seguro para nombres de archivo (CSV).
+export function periodSlug(p: Period): string {
+  if (p.kind === 'today') return todayISO()
+  if (p.kind === 'week') return `semana-${periodRange(p).start}`
+  if (p.kind === 'range') return `${periodRange(p).start}_${p.to >= p.from ? p.to : p.from}`
+  return p.month
+}
+
 export function relativeDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
   const that = new Date(y, m - 1, d).getTime()
