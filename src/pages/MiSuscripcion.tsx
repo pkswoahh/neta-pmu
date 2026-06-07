@@ -56,24 +56,30 @@ export default function MiSuscripcion() {
     setActivationTimedOut(false)
 
     let cancelled = false
-    let attempts = 0
-    const maxAttempts = 10 // ~10s con intervalo de 1s
+    let timer: ReturnType<typeof setTimeout>
+    // Intervalos crecientes: el webhook de Lemon a veces tarda hasta ~50s en
+    // Test mode. Vamos espaciando los reintentos para no martillar el perfil y
+    // dar tiempo real antes de mostrar el banner de "procesando".
+    // Suma acumulada ≈ 48s repartida en 13 intentos.
+    const delays = [1000, 1000, 1500, 2000, 2500, 3000, 4000, 4000, 5000, 5000, 6000, 6000, 7000]
+    let attempt = 0
 
     const tick = async () => {
       if (cancelled) return
-      attempts++
       await refresh()
       if (cancelled) return
-      if (attempts >= maxAttempts) {
+      if (attempt >= delays.length) {
         setActivating(false)
         setActivationTimedOut(true)
         return
       }
-      setTimeout(tick, 1000)
+      timer = setTimeout(tick, delays[attempt])
+      attempt++
     }
-    setTimeout(tick, 1000)
+    timer = setTimeout(tick, delays[attempt])
+    attempt++
 
-    return () => { cancelled = true }
+    return () => { cancelled = true; clearTimeout(timer) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [justSubscribed])
 

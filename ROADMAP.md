@@ -139,7 +139,7 @@ Diseño completo en `docs/ADMIN.md`.
 - [ ] Sentry o similar para tracking de errores
 - [ ] SMTP personalizado (Resend) — enviar desde hola@netapmu.com en lugar de mail.supabase.io
 - [ ] **Personalizar template "Confirm signup"** en Supabase → Auth → Email Templates (plantilla lista pasada a Roberto el 2026-05-15, falta pegarla en el panel)
-- [ ] **Subir polling post-pago** de 10s a 30-45s con backoff (el webhook de Lemon tardó 50s en una prueba, banner amber se mostró innecesariamente)
+- [x] **Subir polling post-pago** de 10s a ~48s con intervalos crecientes (13 reintentos espaciados 1s→7s en `MiSuscripcion.tsx`). Cubre el caso del webhook de Lemon que tardó 50s y evita el banner amber prematuro.
 
 ---
 
