@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Edit2, Trash2, ClipboardList, Search, Download, X, Loader2, Phone, Calendar, CreditCard, MapPin, FileText, User } from 'lucide-react'
+import { Plus, Edit2, Trash2, ClipboardList, Search, Download, X, Loader2, Phone, Calendar, CreditCard, MapPin, FileText, User, Check, UserPlus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
@@ -13,6 +13,8 @@ import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { ListSkeleton } from '@/components/Skeleton'
 import ClientHistoryModal from '@/components/ClientHistoryModal'
+import ClientNameInput from '@/components/ClientNameInput'
+import { aggregateClients, type ClientStats } from '@/lib/clients'
 import { clientKey, defaultPeriod, downloadCSV, formatMoney, periodRange, periodSlug, relativeDate, shortDate, todayISO, type Period } from '@/lib/utils'
 import type { Procedure } from '@/types/database'
 
@@ -320,6 +322,26 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
   const [source, setSource] = useState(editing?.client_source ?? sources[0] ?? '')
   const [notes, setNotes] = useState(editing?.notes ?? '')
   const [busy, setBusy] = useState(false)
+  const [clients, setClients] = useState<ClientStats[]>([])
+
+  // Lista de clientes ya registrados para el autocompletar. Excluimos el
+  // procedimiento que se está editando, para no contarlo como "visita previa".
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    ;(async () => {
+      const { data } = await supabase.from('procedures').select('*').eq('user_id', user.id)
+      if (cancelled) return
+      const rows = ((data ?? []) as Procedure[]).filter(p => p.id !== editing?.id)
+      setClients(aggregateClients(rows))
+    })()
+    return () => { cancelled = true }
+  }, [user, editing])
+
+  const matchedClient = useMemo(() => {
+    const key = clientKey(clientName)
+    return key ? clients.find(c => c.key === key) : undefined
+  }, [clientName, clients])
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -359,7 +381,23 @@ function ProcedureForm({ editing, onClose, onSaved, procedures, payments, source
         </div>
         <div>
           <label className="neta-label">Nombre del cliente</label>
-          <input required value={clientName} onChange={e => setClientName(e.target.value)} autoComplete="off" autoCorrect="off" className="neta-input" placeholder="Ej. María Pérez" />
+          <ClientNameInput
+            value={clientName}
+            onChange={setClientName}
+            onSelect={c => { setClientName(c.displayName); if (c.phone) setClientPhone(c.phone) }}
+            clients={clients}
+          />
+          {clientName.trim() && (
+            matchedClient ? (
+              <p className="text-xs text-positive mt-2 flex items-center gap-1.5">
+                <Check size={13} /> Cliente frecuente · {matchedClient.visits} {matchedClient.visits === 1 ? 'cita previa' : 'citas previas'}
+              </p>
+            ) : (
+              <p className="text-xs text-accent mt-2 flex items-center gap-1.5">
+                <UserPlus size={13} /> Cliente nuevo
+              </p>
+            )
+          )}
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
