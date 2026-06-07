@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Edit2, Trash2, ClipboardList, Search, Download, X, Loader2 } from 'lucide-react'
+import { Plus, Edit2, Trash2, ClipboardList, Search, Download, X, Loader2, Phone, Calendar, CreditCard, MapPin, FileText, User } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
@@ -28,6 +28,7 @@ export default function Procedimientos() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Procedure | null>(null)
   const [historyClient, setHistoryClient] = useState<string | null>(null)
+  const [detail, setDetail] = useState<Procedure | null>(null)
   const [query, setQuery] = useState('')
   const [filterType, setFilterType] = useState('')
 
@@ -176,29 +177,38 @@ export default function Procedimientos() {
         <ul className="space-y-2">
           {filtered.map(p => (
             <li key={p.id} className="neta-card !p-4 flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <button type="button" onClick={() => setHistoryClient(p.client_name)} className="font-medium truncate hover:text-accent transition-colors text-left">
-                    {p.client_name}
-                  </button>
-                  <span className="text-xs text-muted">{relativeDate(p.date)}</span>
+              <button type="button" onClick={() => setDetail(p)} className="flex-1 min-w-0 flex items-center gap-3 text-left">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="font-medium truncate">{p.client_name}</span>
+                    <span className="text-xs text-muted">{relativeDate(p.date)}</span>
+                  </div>
+                  <div className="text-sm text-muted truncate">
+                    <span className="text-accent font-medium">{p.procedure_type}</span> · {p.payment_method}
+                  </div>
                 </div>
-                <div className="text-sm text-muted truncate">
-                  <span className="text-accent font-medium">{p.procedure_type}</span> · {p.payment_method}
+                <div className="text-right shrink-0">
+                  <div className="font-semibold text-positive">{formatMoney(Number(p.amount), currency)}</div>
                 </div>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="font-semibold text-positive">{formatMoney(Number(p.amount), currency)}</div>
-              </div>
+              </button>
               <div className="flex items-center gap-1">
-                <button onClick={() => { setEditing(p); setShowForm(true) }} className="text-muted hover:text-primary p-2 rounded-lg"><Edit2 size={15} /></button>
-                <button onClick={() => deleteItem(p)} className="text-muted hover:text-negative p-2 rounded-lg"><Trash2 size={15} /></button>
+                <button onClick={() => { setEditing(p); setShowForm(true) }} className="text-muted hover:text-primary p-2 rounded-lg" aria-label="Editar"><Edit2 size={15} /></button>
+                <button onClick={() => deleteItem(p)} className="text-muted hover:text-negative p-2 rounded-lg" aria-label="Eliminar"><Trash2 size={15} /></button>
               </div>
             </li>
           ))}
         </ul>
       )}
 
+      {detail && (
+        <ProcedureDetailModal
+          procedure={detail}
+          currency={currency}
+          onClose={() => setDetail(null)}
+          onEdit={() => { setEditing(detail); setShowForm(true); setDetail(null) }}
+          onViewClient={() => { setHistoryClient(detail.client_name); setDetail(null) }}
+        />
+      )}
       {historyClient && (
         <ClientHistoryModal open clientName={historyClient} onClose={() => setHistoryClient(null)} />
       )}
@@ -213,6 +223,72 @@ export default function Procedimientos() {
           currency={currency}
         />
       )}
+    </div>
+  )
+}
+
+function ProcedureDetailModal({ procedure: p, currency, onClose, onEdit, onViewClient }: {
+  procedure: Procedure
+  currency: string
+  onClose: () => void
+  onEdit: () => void
+  onViewClient: () => void
+}) {
+  return (
+    <Modal
+      open
+      title="Detalle de la cita"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose} className="neta-btn-ghost">Cerrar</button>
+          <button type="button" onClick={onEdit} className="neta-btn-primary flex items-center gap-2">
+            <Edit2 size={15} /> Editar
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <div className="text-center pb-1">
+          <div className="text-3xl font-semibold text-positive tabular-nums">{formatMoney(Number(p.amount), currency)}</div>
+          <div className="text-sm text-accent font-medium mt-1">{p.procedure_type}</div>
+        </div>
+
+        <div className="space-y-3 border-t border-border pt-5">
+          <DetailRow icon={<User size={15} />} label="Cliente" value={p.client_name} />
+          {p.client_phone && (
+            <DetailRow
+              icon={<Phone size={15} />}
+              label="Celular"
+              value={<a href={`tel:${p.client_phone}`} className="text-accent hover:underline">{p.client_phone}</a>}
+            />
+          )}
+          <DetailRow icon={<Calendar size={15} />} label="Fecha" value={`${shortDate(p.date)} · ${relativeDate(p.date)}`} />
+          <DetailRow icon={<CreditCard size={15} />} label="Método de pago" value={p.payment_method} />
+          <DetailRow icon={<MapPin size={15} />} label="Origen del cliente" value={p.client_source} />
+          <DetailRow
+            icon={<FileText size={15} />}
+            label="Observaciones"
+            value={p.notes?.trim() ? p.notes : <span className="text-muted">Sin observaciones</span>}
+          />
+        </div>
+
+        <button type="button" onClick={onViewClient} className="text-sm text-accent hover:underline">
+          Ver historial completo del cliente →
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
+function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="text-muted shrink-0 mt-0.5">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-xs text-muted uppercase tracking-wider">{label}</div>
+        <div className="mt-0.5 break-words">{value}</div>
+      </div>
     </div>
   )
 }
