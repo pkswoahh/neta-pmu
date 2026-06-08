@@ -27,7 +27,6 @@ export default function Gastos() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Expense | null>(null)
   const [query, setQuery] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
 
   async function load() {
     if (!user) return
@@ -65,19 +64,15 @@ export default function Gastos() {
   const currency = profile?.currency ?? 'COP'
 
   const filtered = useMemo(() => {
-    let result = items
-    if (query) {
-      const q = clientKey(query)
-      result = result.filter(g =>
-        clientKey(g.description).includes(q) ||
-        clientKey(g.category).includes(q)
-      )
-    }
-    if (filterCategory) result = result.filter(g => g.category === filterCategory)
-    return result
-  }, [items, query, filterCategory])
+    if (!query) return items
+    const q = clientKey(query)
+    return items.filter(g =>
+      clientKey(g.description).includes(q) ||
+      clientKey(g.category).includes(q)
+    )
+  }, [items, query])
 
-  const hasFilters = query || filterCategory
+  const hasFilters = !!query
   const total = useMemo(() => filtered.reduce((s, g) => s + Number(g.amount), 0), [filtered])
 
   function handleExport() {
@@ -124,33 +119,22 @@ export default function Gastos() {
           }
         />
 
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-            <input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Buscar descripción o categoría"
-              autoComplete="off"
-              autoCorrect="off"
-              className="neta-input pl-9 pr-9"
-            />
-            {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary">
-                <X size={14} />
-              </button>
-            )}
-          </div>
-          <div className="w-36">
-            <Select
-              value={filterCategory}
-              onChange={setFilterCategory}
-              options={[{ value: '', label: 'Todas' }, ...categories.map(c => ({ value: c, label: c }))]}
-              placeholder="Categoría"
-            />
-          </div>
+        <div className="relative">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Buscar descripción o categoría"
+            autoComplete="off"
+            autoCorrect="off"
+            className="neta-input pl-9 pr-9"
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary">
+              <X size={14} />
+            </button>
+          )}
         </div>
-
       </div>
 
       {!loading && items.length > 0 && (
@@ -160,7 +144,7 @@ export default function Gastos() {
             {hasFilters && (
               <>
                 <span className="text-muted"> de {items.length}</span>
-                <button onClick={() => { setQuery(''); setFilterCategory('') }} className="text-accent hover:underline ml-2 text-xs">Limpiar</button>
+                <button onClick={() => setQuery('')} className="text-accent hover:underline ml-2 text-xs">Limpiar</button>
               </>
             )}
           </div>
@@ -263,7 +247,7 @@ function ExpenseForm({ editing, onClose, onSaved, categories, currency }: FormPr
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="neta-label">Fecha</label>
-            <input type="date" required value={date} onChange={e => setDate(e.target.value)} className="neta-input !w-auto" />
+            <input type="date" lang="es" required value={date} onChange={e => setDate(e.target.value)} className="neta-input" />
           </div>
           <div>
             <label className="neta-label">Categoría</label>

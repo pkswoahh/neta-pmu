@@ -41,9 +41,14 @@ export default function Clientes() {
   }, [user])
 
   const filtered = useMemo(() => {
-    const q = clientKey(query)
-    if (!q) return items
-    return items.filter(c => c.key.includes(q))
+    const raw = query.trim()
+    if (!raw) return items
+    const k = clientKey(raw)
+    const digits = raw.replace(/\D/g, '')
+    return items.filter(c =>
+      c.key.includes(k) ||
+      (digits.length > 0 && !!c.phone && c.phone.replace(/\D/g, '').includes(digits))
+    )
   }, [items, query])
 
   const currency = profile?.currency ?? 'COP'
@@ -60,7 +65,7 @@ export default function Clientes() {
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Buscar por nombre"
+          placeholder="Buscar por nombre o celular"
           className="neta-input pl-10 pr-10"
         />
         {query && (
@@ -97,7 +102,7 @@ export default function Clientes() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="neta-card">
-          <Empty title="Sin coincidencias" hint="Prueba con otro nombre." />
+          <Empty title="Sin coincidencias" hint="Prueba con otro nombre o celular." />
         </div>
       ) : (
         <ul className="space-y-2">

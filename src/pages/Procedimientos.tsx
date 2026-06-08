@@ -8,7 +8,6 @@ import { useToast } from '@/components/Toast'
 import { useConfirm } from '@/components/Confirm'
 import Modal from '@/components/Modal'
 import PeriodSelector from '@/components/PeriodSelector'
-import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { ListSkeleton } from '@/components/Skeleton'
 import ClientHistoryModal from '@/components/ClientHistoryModal'
@@ -30,7 +29,6 @@ export default function Procedimientos() {
   const [historyClient, setHistoryClient] = useState<string | null>(null)
   const [detail, setDetail] = useState<Procedure | null>(null)
   const [query, setQuery] = useState('')
-  const [filterType, setFilterType] = useState('')
 
   async function load() {
     if (!user) return
@@ -68,19 +66,15 @@ export default function Procedimientos() {
   const currency = profile?.currency ?? 'COP'
 
   const filtered = useMemo(() => {
-    let result = items
-    if (query) {
-      const q = clientKey(query)
-      result = result.filter(p =>
-        clientKey(p.client_name).includes(q) ||
-        clientKey(p.procedure_type).includes(q)
-      )
-    }
-    if (filterType) result = result.filter(p => p.procedure_type === filterType)
-    return result
-  }, [items, query, filterType])
+    if (!query) return items
+    const q = clientKey(query)
+    return items.filter(p =>
+      clientKey(p.client_name).includes(q) ||
+      clientKey(p.procedure_type).includes(q)
+    )
+  }, [items, query])
 
-  const hasFilters = query || filterType
+  const hasFilters = !!query
   const total = useMemo(() => filtered.reduce((s, p) => s + Number(p.amount), 0), [filtered])
 
   function handleExport() {
@@ -131,33 +125,22 @@ export default function Procedimientos() {
           }
         />
 
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-            <input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Buscar cliente o procedimiento"
-              autoComplete="off"
-              autoCorrect="off"
-              className="neta-input pl-9 pr-9"
-            />
-            {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary">
-                <X size={14} />
-              </button>
-            )}
-          </div>
-          <div className="w-36">
-            <Select
-              value={filterType}
-              onChange={setFilterType}
-              options={[{ value: '', label: 'Todos' }, ...procedureTypes.map(t => ({ value: t, label: t }))]}
-              placeholder="Tipo"
-            />
-          </div>
+        <div className="relative">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Buscar cliente o procedimiento"
+            autoComplete="off"
+            autoCorrect="off"
+            className="neta-input pl-9 pr-9"
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary">
+              <X size={14} />
+            </button>
+          )}
         </div>
-
       </div>
 
       {!loading && items.length > 0 && (
@@ -167,7 +150,7 @@ export default function Procedimientos() {
             {hasFilters && (
               <>
                 <span className="text-muted"> de {items.length}</span>
-                <button onClick={() => { setQuery(''); setFilterType('') }} className="text-accent hover:underline ml-2 text-xs">Limpiar</button>
+                <button onClick={() => setQuery('')} className="text-accent hover:underline ml-2 text-xs">Limpiar</button>
               </>
             )}
           </div>

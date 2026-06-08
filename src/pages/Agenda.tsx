@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, CalendarDays, Clock, Phone, FileText, Loader2, Check, UserPlus, Edit2, Trash2, ClipboardCheck, Ban, MessageCircle, UserX } from 'lucide-react'
+import { Plus, CalendarDays, CalendarPlus, Clock, Phone, FileText, Loader2, Check, UserPlus, Edit2, Trash2, ClipboardCheck, Ban, MessageCircle, UserX } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,7 +15,7 @@ import PhoneInput from '@/components/PhoneInput'
 import ProcedureForm from '@/components/ProcedureForm'
 import { aggregateClients, type ClientStats } from '@/lib/clients'
 import { whatsappLink, renderReminder } from '@/lib/whatsapp'
-import { addDaysISO, clientKey, relativeDate, shortDate, todayISO } from '@/lib/utils'
+import { addDaysISO, clientKey, cn, relativeDate, shortDate, todayISO } from '@/lib/utils'
 import type { Appointment, Procedure } from '@/types/database'
 
 // Hora 'HH:MM(:SS)' → '9:30 a.m.' Devuelve null si no hay hora.
@@ -37,16 +37,23 @@ function longDate(iso: string): string {
   return `${DOW[new Date(y, m - 1, d).getDay()]} ${d} de ${MON[m - 1]}`
 }
 
-// Fecha compacta para las tarjetas: "11 jun".
+// Fecha compacta: "11 jun".
 function shortDM(iso: string): string {
   const [, m, d] = iso.split('-').map(Number)
   return `${d} ${MON_ABBR[m - 1]}`
 }
 
+// Etiqueta de día para las tarjetas: Hoy / Mañana / "11 jun".
+function dayLabel(iso: string): string {
+  const t = todayISO()
+  if (iso === t) return 'Hoy'
+  if (iso === addDaysISO(t, 1)) return 'Mañana'
+  return shortDM(iso)
+}
+
 // Link de WhatsApp con el recordatorio armado. Usa la plantilla personalizada
 // del perfil si existe; si no, un mensaje por defecto que omite las partes
-// vacías (procedimiento/hora/negocio) para que suene natural. null si no hay
-// celular usable.
+// vacías. null si no hay celular usable.
 function reminderUrl(a: Appointment, businessName: string | null, template: string | null): string | null {
   if (!a.client_phone) return null
   const nombre = a.client_name.trim().split(/\s+/)[0]
@@ -86,16 +93,18 @@ export default function Agenda() {
 
   const [items, setItems] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
+  const [view, setView] = useState<'active' | 'history'>('active')
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Appointment | null>(null)
+  const [rescheduleMode, setRescheduleMode] = useState(false)
   const [detail, setDetail] = useState<Appointment | null>(null)
   const [registering, setRegistering] = useState<Appointment | null>(null)
 
   async function load() {
     if (!user) return
     setLoading(true)
-    // Traemos lo agendado a futuro/atrasado completo, y el historial reciente
-    // (atendidas/canceladas de los últimos 60 días) para no crecer sin tope.
+    // Lo agendado (futuro/atrasado) completo + el historial de los últimos 60
+    // días, para no crecer sin tope.
     const { data, error } = await supabase
       .from('appointments')
       .select('*')
@@ -110,18 +119,21 @@ export default function Agenda() {
   useEffect(() => { void load() }, [user])
 
   const today = todayISO()
-  const tomorrow = addDaysISO(today, 1)
 
-  const groups = useMemo(() => {
+  const grouped = useMemo(() => {
     const scheduled = items.filter(a => a.status === 'scheduled')
-    return {
-      overdue: scheduled.filter(a => a.date < today).sort(byDateTime),
-      today: scheduled.filter(a => a.date === today).sort(byDateTime),
-      tomorrow: scheduled.filter(a => a.date === tomorrow).sort(byDateTime),
-      upcoming: scheduled.filter(a => a.date > tomorrow).sort(byDateTime),
-      history: items.filter(a => a.status !== 'scheduled').sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 20),
+    const overdue = scheduled.filter(a => a.date < today).sort(byDateTime)
+    const upcoming = scheduled.filter(a => a.date >= today).sort(byDateTime)
+    const history = items
+      .filter(a => a.status !== 'scheduled')
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+    const hc = {
+      done: history.filter(a => a.status === 'done').length,
+      canceled: history.filter(a => a.status === 'canceled').length,
+      no_show: history.filter(a => a.status === 'no_show').length,
     }
-  }, [items, today, tomorrow])
+    return { overdue, upcoming, history, activeCount: scheduled.length, hc }
+  }, [items, today])
 
   async function deleteAppt(a: Appointment) {
     const ok = await confirm({
@@ -160,8 +172,8 @@ export default function Agenda() {
     else { toast.show('Marcada como "No vino"', 'success'); setDetail(null); await load() }
   }
 
-  // "Registrar atención" para una cita futura es raro (no la has atendido aún):
-  // avisamos. Si confirma, el procedimiento se guarda con la fecha de hoy.
+  // "Registrar atención" de una cita futura es raro: avisamos. Si confirma, el
+  // procedimiento se guarda con la fecha de hoy.
   async function handleRegister(a: Appointment) {
     if (a.date > today) {
       const ok = await confirm({
@@ -186,20 +198,31 @@ export default function Agenda() {
     await load()
   }
 
+  function openEdit(a: Appointment) { setEditing(a); setRescheduleMode(false); setShowForm(true); setDetail(null) }
+  function openReschedule(a: Appointment) { setEditing(a); setRescheduleMode(true); setShowForm(true); setDetail(null) }
+
   const currency = profile?.currency ?? 'COP'
   const hasAny = items.length > 0
+  const historyCount = grouped.history.length
 
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">Agenda</h1>
-          <p className="text-muted mt-1 md:mt-2 text-sm md:text-base">Tus próximas citas, claras.</p>
+          <p className="text-muted mt-1 md:mt-2 text-sm md:text-base">Tus citas, claras.</p>
         </div>
-        <button onClick={() => { setEditing(null); setShowForm(true) }} className="neta-btn-primary flex items-center gap-2 px-4 py-2.5 text-sm shrink-0">
+        <button onClick={() => { setEditing(null); setRescheduleMode(false); setShowForm(true) }} className="neta-btn-primary flex items-center gap-2 px-4 py-2.5 text-sm shrink-0">
           <Plus size={16} /> <span className="hidden sm:inline">Agendar</span>
         </button>
       </div>
+
+      {hasAny && !loading && (
+        <div className="flex gap-1 bg-surface border border-border rounded-xl p-1">
+          <SegBtn active={view === 'active'} onClick={() => setView('active')} label="Activas" count={grouped.activeCount} />
+          <SegBtn active={view === 'history'} onClick={() => setView('history')} label="Historial" count={historyCount} />
+        </div>
+      )}
 
       {loading ? (
         <ListSkeleton rows={4} />
@@ -207,13 +230,31 @@ export default function Agenda() {
         <div className="neta-card">
           <Empty icon={<CalendarDays size={32} />} title="No tienes citas agendadas" hint="Toca «Agendar» para crear la primera y que Neta te la recuerde." />
         </div>
+      ) : view === 'active' ? (
+        grouped.activeCount === 0 ? (
+          <div className="neta-card">
+            <Empty icon={<CalendarDays size={32} />} title="No tienes citas activas" hint="Toca «Agendar» para crear una nueva." />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <Group title="Atrasadas" tone="warn" appts={grouped.overdue} onTap={setDetail} />
+            <Group title="Próximas" appts={grouped.upcoming} onTap={setDetail} />
+          </div>
+        )
+      ) : historyCount === 0 ? (
+        <div className="neta-card">
+          <Empty icon={<CalendarDays size={32} />} title="Sin historial todavía" hint="Aquí quedan las citas atendidas, canceladas o que no asistieron." />
+        </div>
       ) : (
-        <div className="space-y-6">
-          <Group title="Atrasadas" tone="warn" appts={groups.overdue} showDate currency={currency} onTap={setDetail} />
-          <Group title="Hoy" appts={groups.today} currency={currency} onTap={setDetail} />
-          <Group title="Mañana" appts={groups.tomorrow} currency={currency} onTap={setDetail} />
-          <Group title="Próximas" appts={groups.upcoming} showDate currency={currency} onTap={setDetail} />
-          <Group title="Historial" appts={groups.history} showDate muted currency={currency} onTap={setDetail} />
+        <div className="space-y-4">
+          <div className="neta-card !p-3.5 grid grid-cols-3 text-center">
+            <Stat value={grouped.hc.done} label="Atendidas" cls="text-positive" />
+            <Stat value={grouped.hc.canceled} label="Canceladas" />
+            <Stat value={grouped.hc.no_show} label="No vino" cls="text-amber-300" />
+          </div>
+          <ul className="space-y-2">
+            {grouped.history.map(a => <ApptCard key={a.id} appt={a} muted onTap={setDetail} />)}
+          </ul>
         </div>
       )}
 
@@ -223,7 +264,8 @@ export default function Agenda() {
           waUrl={reminderUrl(detail, profile?.business_name ?? null, profile?.reminder_template ?? null)}
           onClose={() => setDetail(null)}
           onRegister={() => handleRegister(detail)}
-          onEdit={() => { setEditing(detail); setShowForm(true); setDetail(null) }}
+          onEdit={() => openEdit(detail)}
+          onReschedule={() => openReschedule(detail)}
           onCancel={() => cancelAppt(detail)}
           onNoShow={() => markNoShow(detail)}
           onDelete={() => deleteAppt(detail)}
@@ -233,9 +275,10 @@ export default function Agenda() {
       {showForm && (
         <AppointmentForm
           editing={editing}
+          reschedule={rescheduleMode}
           procedures={byType('procedure').map(o => o.value)}
-          onClose={() => setShowForm(false)}
-          onSaved={async () => { setShowForm(false); await load() }}
+          onClose={() => { setShowForm(false); setRescheduleMode(false) }}
+          onSaved={async () => { setShowForm(false); if (rescheduleMode) setView('active'); setRescheduleMode(false); await load() }}
         />
       )}
 
@@ -260,67 +303,88 @@ export default function Agenda() {
   )
 }
 
-function Group({ title, appts, showDate, muted, tone, onTap }: {
+function SegBtn({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count: number }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn('flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition', active ? 'bg-accent text-bg' : 'text-muted hover:text-primary hover:bg-bg')}
+    >
+      {label}{count > 0 && <span className={cn('ml-1', active ? 'text-bg/70' : 'text-muted')}>· {count}</span>}
+    </button>
+  )
+}
+
+function Stat({ value, label, cls }: { value: number; label: string; cls?: string }) {
+  return (
+    <div>
+      <div className={cn('text-xl font-semibold tabular-nums', cls)}>{value}</div>
+      <div className="text-[11px] text-muted mt-0.5 uppercase tracking-wider">{label}</div>
+    </div>
+  )
+}
+
+function Group({ title, appts, tone, onTap }: {
   title: string
   appts: Appointment[]
-  showDate?: boolean
-  muted?: boolean
   tone?: 'warn'
-  currency: string
   onTap: (a: Appointment) => void
 }) {
   if (appts.length === 0) return null
   return (
     <section>
-      <h2 className={`text-xs uppercase tracking-wider mb-2 flex items-center gap-2 ${tone === 'warn' ? 'text-amber-300' : 'text-muted'}`}>
+      <h2 className={cn('text-xs uppercase tracking-wider mb-2 flex items-center gap-2', tone === 'warn' ? 'text-amber-300' : 'text-muted')}>
         {title}
         <span className="text-[10px] font-normal normal-case text-muted">· {appts.length}</span>
       </h2>
       <ul className="space-y-2">
-        {appts.map(a => {
-          const time = formatTime(a.time)
-          return (
-            <li key={a.id}>
-              <button
-                type="button"
-                onClick={() => onTap(a)}
-                className={`w-full neta-card !p-4 flex items-center gap-3 text-left transition hover:border-accent/40 ${muted ? 'opacity-70' : ''} ${tone === 'warn' ? '!border-amber-400/30' : ''}`}
-              >
-                <div className="shrink-0 w-16 text-center">
-                  {time ? (
-                    <div className="text-sm font-semibold leading-tight">{time.replace(' ', ' ')}</div>
-                  ) : (
-                    <Clock size={18} className="text-muted mx-auto" />
-                  )}
-                  {showDate && <div className="text-[11px] text-muted mt-0.5">{shortDM(a.date)}</div>}
-                </div>
-                <div className="flex-1 min-w-0 border-l border-border pl-3">
-                  <div className="font-medium truncate">{a.client_name}</div>
-                  <div className="text-sm text-muted truncate">
-                    {a.procedure_type
-                      ? <span className="text-accent font-medium">{a.procedure_type}</span>
-                      : <span>Sin especificar</span>}
-                    {a.status === 'done' && <span className="text-positive"> · Atendida</span>}
-                    {a.status === 'canceled' && <span> · Cancelada</span>}
-                    {a.status === 'no_show' && <span className="text-amber-300"> · No vino</span>}
-                    {showDate && a.status === 'scheduled' && <span> · {relativeDate(a.date)}</span>}
-                  </div>
-                </div>
-              </button>
-            </li>
-          )
-        })}
+        {appts.map(a => <ApptCard key={a.id} appt={a} tone={tone} onTap={onTap} />)}
       </ul>
     </section>
   )
 }
 
-function AppointmentDetail({ appt: a, waUrl, onClose, onRegister, onEdit, onCancel, onNoShow, onDelete }: {
+function ApptCard({ appt: a, muted, tone, onTap }: {
+  appt: Appointment
+  muted?: boolean
+  tone?: 'warn'
+  onTap: (a: Appointment) => void
+}) {
+  const time = formatTime(a.time)
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => onTap(a)}
+        className={cn('w-full neta-card !p-4 flex items-center gap-3 text-left transition hover:border-accent/40', muted && 'opacity-70', tone === 'warn' && '!border-amber-400/30')}
+      >
+        <div className="shrink-0 w-16 text-center">
+          <div className="text-sm font-semibold leading-tight">{dayLabel(a.date)}</div>
+          {time && <div className="text-[11px] text-muted mt-0.5">{time}</div>}
+        </div>
+        <div className="flex-1 min-w-0 border-l border-border pl-3">
+          <div className="font-medium truncate">{a.client_name}</div>
+          <div className="text-sm text-muted truncate">
+            {a.procedure_type
+              ? <span className="text-accent font-medium">{a.procedure_type}</span>
+              : <span>Sin especificar</span>}
+            {a.status === 'done' && <span className="text-positive"> · Atendida</span>}
+            {a.status === 'canceled' && <span> · Cancelada</span>}
+            {a.status === 'no_show' && <span className="text-amber-300"> · No vino</span>}
+          </div>
+        </div>
+      </button>
+    </li>
+  )
+}
+
+function AppointmentDetail({ appt: a, waUrl, onClose, onRegister, onEdit, onReschedule, onCancel, onNoShow, onDelete }: {
   appt: Appointment
   waUrl: string | null
   onClose: () => void
   onRegister: () => void
   onEdit: () => void
+  onReschedule: () => void
   onCancel: () => void
   onNoShow: () => void
   onDelete: () => void
@@ -347,7 +411,7 @@ function AppointmentDetail({ appt: a, waUrl, onClose, onRegister, onEdit, onCanc
           <Row icon={<FileText size={15} />} label="Notas" value={a.notes?.trim() ? a.notes : <span className="text-muted">Sin notas</span>} />
         </div>
 
-        {scheduled && (
+        {scheduled ? (
           <div className="space-y-2 border-t border-border pt-5">
             {waUrl ? (
               <a
@@ -380,9 +444,13 @@ function AppointmentDetail({ appt: a, waUrl, onClose, onRegister, onEdit, onCanc
               </button>
             </div>
           </div>
-        )}
-        {!scheduled && (
-          <div className="border-t border-border pt-5">
+        ) : (
+          <div className="space-y-2 border-t border-border pt-5">
+            {(a.status === 'canceled' || a.status === 'no_show') && (
+              <button onClick={onReschedule} className="neta-btn-primary w-full flex items-center justify-center gap-2">
+                <CalendarPlus size={16} /> Reagendar
+              </button>
+            )}
             <button onClick={onDelete} className="neta-btn-ghost w-full flex items-center justify-center gap-2 text-sm hover:!text-negative">
               <Trash2 size={15} /> Borrar del historial
             </button>
@@ -405,8 +473,9 @@ function Row({ icon, label, value }: { icon: React.ReactNode; label: string; val
   )
 }
 
-function AppointmentForm({ editing, procedures, onClose, onSaved }: {
+function AppointmentForm({ editing, reschedule, procedures, onClose, onSaved }: {
   editing: Appointment | null
+  reschedule?: boolean
   procedures: string[]
   onClose: () => void
   onSaved: () => void
@@ -415,8 +484,10 @@ function AppointmentForm({ editing, procedures, onClose, onSaved }: {
   const { profile } = useProfile()
   const toast = useToast()
 
-  const [date, setDate] = useState(editing?.date ?? todayISO())
-  const [time, setTime] = useState(editing?.time ? editing.time.slice(0, 5) : '')
+  // Al reagendar arrancamos con fecha de hoy y sin hora (es una cita nueva en el
+  // tiempo, conservando los datos del cliente).
+  const [date, setDate] = useState(reschedule ? todayISO() : (editing?.date ?? todayISO()))
+  const [time, setTime] = useState(reschedule ? '' : (editing?.time ? editing.time.slice(0, 5) : ''))
   const [clientName, setClientName] = useState(editing?.client_name ?? '')
   const [clientPhone, setClientPhone] = useState(editing?.client_phone ?? '')
   const [procType, setProcType] = useState(editing?.procedure_type ?? '')
@@ -445,7 +516,7 @@ function AppointmentForm({ editing, procedures, onClose, onSaved }: {
     if (!user) return
     if (!clientName.trim()) { toast.show('Escribe el nombre del cliente', 'error'); return }
     setBusy(true)
-    const payload = {
+    const payload: Record<string, unknown> = {
       user_id: user.id,
       date,
       time: time || null,
@@ -454,16 +525,18 @@ function AppointmentForm({ editing, procedures, onClose, onSaved }: {
       procedure_type: procType || null,
       notes: notes.trim() || null,
     }
+    // Reagendar devuelve la cita a "agendada".
+    if (reschedule) payload.status = 'scheduled'
     const { error } = editing
       ? await supabase.from('appointments').update(payload).eq('id', editing.id)
       : await supabase.from('appointments').insert(payload)
     setBusy(false)
     if (error) toast.show(translateError(error), 'error')
-    else { toast.show(editing ? 'Cita actualizada' : 'Cita agendada', 'success'); onSaved() }
+    else { toast.show(reschedule ? 'Cita reagendada' : editing ? 'Cita actualizada' : 'Cita agendada', 'success'); onSaved() }
   }
 
   return (
-    <Modal open title={editing ? 'Editar cita' : 'Agendar cita'} onClose={onClose}
+    <Modal open title={reschedule ? 'Reagendar cita' : editing ? 'Editar cita' : 'Agendar cita'} onClose={onClose}
       footer={<>
         <button type="button" onClick={onClose} className="neta-btn-ghost">Cancelar</button>
         <button type="submit" form="appt-form" disabled={busy} className="neta-btn-primary flex items-center gap-2">
@@ -471,15 +544,13 @@ function AppointmentForm({ editing, procedures, onClose, onSaved }: {
         </button>
       </>}>
       <form id="appt-form" onSubmit={submit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="neta-label">Fecha</label>
-            <input type="date" lang="es" required value={date} onChange={e => setDate(e.target.value)} className="neta-input" />
-          </div>
-          <div>
-            <label className="neta-label">Hora (opcional)</label>
-            <input type="time" lang="es" value={time} onChange={e => setTime(e.target.value)} className="neta-input" />
-          </div>
+        <div>
+          <label className="neta-label">Fecha</label>
+          <input type="date" lang="es" required value={date} onChange={e => setDate(e.target.value)} className="neta-input" />
+        </div>
+        <div>
+          <label className="neta-label">Hora (opcional)</label>
+          <input type="time" lang="es" value={time} onChange={e => setTime(e.target.value)} className="neta-input" />
         </div>
         <div>
           <label className="neta-label">Nombre del cliente</label>

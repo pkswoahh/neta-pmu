@@ -12,6 +12,7 @@ import MoneyInput from '@/components/MoneyInput'
 import Select from '@/components/Select'
 import { COUNTRIES, flagEmoji } from '@/lib/countries'
 import { DEFAULT_REMINDER_TEMPLATE } from '@/lib/whatsapp'
+import { cn } from '@/lib/utils'
 import type { OptionType, UserOption } from '@/types/database'
 
 const CURRENCIES = [
@@ -358,7 +359,17 @@ function OptionsSection({ type, title, hint, onChanged }: { type: OptionType; ti
           autoCorrect="off"
           className="neta-input flex-1"
         />
-        <button onClick={addItem} disabled={!adding.trim()} className="neta-btn-primary px-4 flex items-center gap-1">
+        <button
+          onClick={addItem}
+          disabled={!adding.trim()}
+          aria-label="Agregar"
+          className={cn(
+            'rounded-xl px-4 flex items-center justify-center transition shrink-0',
+            adding.trim()
+              ? 'bg-accent text-bg font-semibold hover:opacity-90 active:opacity-80'
+              : 'bg-surface border border-border text-muted/40 cursor-not-allowed',
+          )}
+        >
           <Plus size={16} />
         </button>
       </div>
