@@ -80,6 +80,22 @@ export interface Expense {
   is_demo: boolean
 }
 
+export type AppointmentStatus = 'scheduled' | 'done' | 'canceled'
+
+export interface Appointment {
+  id: string
+  user_id: string
+  client_name: string
+  client_phone: string | null
+  procedure_type: string | null
+  date: string
+  time: string | null
+  notes: string | null
+  status: AppointmentStatus
+  procedure_id: string | null
+  created_at: string
+}
+
 export interface AdminAuditLog {
   id: string
   admin_id: string

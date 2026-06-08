@@ -16,6 +16,7 @@ import RecoverPassword from '@/pages/RecoverPassword'
 import SuscripcionVencida from '@/pages/SuscripcionVencida'
 import CuentaSuspendida from '@/pages/CuentaSuspendida'
 import Dashboard from '@/pages/Dashboard'
+import Agenda from '@/pages/Agenda'
 import Procedimientos from '@/pages/Procedimientos'
 import Clientes from '@/pages/Clientes'
 import Gastos from '@/pages/Gastos'
@@ -62,6 +63,7 @@ export default function App() {
 
               <Route element={<RequireAuthAndOnboarded><AppLayout /></RequireAuthAndOnboarded>}>
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="agenda" element={<Agenda />} />
                 <Route path="procedimientos" element={<Procedimientos />} />
                 <Route path="clientes" element={<Clientes />} />
                 <Route path="gastos" element={<Gastos />} />

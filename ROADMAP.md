@@ -1,7 +1,12 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-06-07 (Datos demo · gráfico tendencia · tarjeta detalle · filtros de periodo Hoy/Semana/Mes/Rango · cliente inteligente · fix constelaciones · 6 ajustes internos)
+Última actualización: 2026-06-08 (Agenda/recordatorios · fix teclado iOS — bloqueo de scroll del documento)
+
+## 🗓️ Sesión 2026-06-08 — completado (sin deploy aún, commiteado local)
+
+- [x] **Fix teclado iOS (Chrome + PWA)** — el bottom nav se descolocaba al cerrar el teclado (en Chrome desaparecía y tocaba recargar; en la PWA se subía). Causa: dependíamos de detectar el teclado por foco (que en Chrome no dispara al usar "esconder teclado") + scroll residual del documento. Solución de fondo: clase `body.app-shell-lock` bloquea el scroll del documento mientras la app está montada (el único scroll vive en `<main>`); se eliminó la detección por foco. `AppLayout.tsx` + `globals.css`.
+- [x] **Agenda / recordatorios de citas** — ver Nice-to-have (migración 011, pestaña, ciclo agendar→atender→registrar, tarjeta en Dashboard).
 
 ## 🗓️ Sesión 2026-06-07 — completado
 
@@ -89,7 +94,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 ## 💡 Nice-to-have (post-MVP)
 
-- [ ] Agenda / recordatorios de citas próximas
+- [x] ~~Agenda / recordatorios de citas próximas~~ — **2026-06-08.** Tabla `appointments` (migración 011) + RLS owner_all. Pestaña "Agenda" (2ª en el nav). Lista agrupada Atrasadas/Hoy/Mañana/Próximas/Historial. Cierra el ciclo: botón "Registrar atención" abre el `ProcedureForm` prellenado y marca la cita `done` enlazándola al procedimiento. Recordatorio in-app vía tarjeta "Próximas citas" en el Dashboard (sin push). `ProcedureForm` extraído a `src/components/ProcedureForm.tsx` para reusarlo.
 - [ ] Notificaciones push al alcanzar la meta
 - [x] ~~Gráfico de tendencia mensual de ingresos~~ — **quitado 2026-06-08** por feedback de Roberto: confundía (anclado a 6 meses fijos, no reaccionaba al periodo) y aportaba poco frente a las tarjetas "vs periodo anterior". Dashboard más limpio.
 - [ ] Drag-and-drop para reordenar opciones en Configuración

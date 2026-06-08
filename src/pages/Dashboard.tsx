@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X, Sparkles, ArrowRight, Settings, Wand2, Loader2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, ClipboardList, Target, Edit2, Check, X, Sparkles, ArrowRight, Settings, Wand2, Loader2, CalendarDays } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -10,8 +10,8 @@ import MoneyInput from '@/components/MoneyInput'
 import { DashboardSkeleton } from '@/components/Skeleton'
 import { seedDemoData } from '@/lib/demo'
 import { translateError } from '@/lib/errors'
-import { clientKey, currentMonth, defaultPeriod, formatMoney, periodRange, previousPeriodLabel, previousPeriodRange, type Period } from '@/lib/utils'
-import type { Expense, Procedure } from '@/types/database'
+import { clientKey, currentMonth, defaultPeriod, formatMoney, periodRange, previousPeriodLabel, previousPeriodRange, relativeDate, todayISO, type Period } from '@/lib/utils'
+import type { Appointment, Expense, Procedure } from '@/types/database'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [historyNames, setHistoryNames] = useState<Map<string, string>>(new Map())
   const [totalProcCount, setTotalProcCount] = useState(0)
   const [totalExpenseCount, setTotalExpenseCount] = useState(0)
+  const [upcoming, setUpcoming] = useState<Appointment[]>([])
 
   useEffect(() => {
     if (!user) return
@@ -35,7 +36,7 @@ export default function Dashboard() {
       const { start, end } = periodRange(period)
       const { start: pStart, end: pEnd } = previousPeriodRange(period)
 
-      const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }, { count: procCount }, { count: expCount }] = await Promise.all([
+      const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }, { count: procCount }, { count: expCount }, { data: apptData }] = await Promise.all([
         supabase.from('procedures').select('*').eq('user_id', user.id).gte('date', start).lt('date', end).order('date', { ascending: false }),
         supabase.from('expenses').select('*').eq('user_id', user.id).gte('date', start).lt('date', end),
         supabase.from('procedures').select('amount,date').eq('user_id', user.id).gte('date', pStart).lt('date', pEnd),
@@ -43,6 +44,7 @@ export default function Dashboard() {
         supabase.from('procedures').select('client_name,date').eq('user_id', user.id).lt('date', end),
         supabase.from('procedures').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('expenses').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('appointments').select('*').eq('user_id', user.id).eq('status', 'scheduled').gte('date', todayISO()).order('date', { ascending: true }).order('time', { ascending: true, nullsFirst: false }).limit(6),
       ])
       if (cancelled) return
       const map = new Map<string, string>()
@@ -59,6 +61,7 @@ export default function Dashboard() {
       setPrevExps((peData ?? []) as any[])
       setTotalProcCount(procCount ?? 0)
       setTotalExpenseCount(expCount ?? 0)
+      setUpcoming((apptData ?? []) as Appointment[])
       setLoading(false)
     })()
     return () => { cancelled = true }
@@ -139,6 +142,27 @@ export default function Dashboard() {
 
       {loading ? <DashboardSkeleton /> : (
         <>
+          {/* Próximas citas — recordatorio in-app (alimentado por la Agenda) */}
+          {upcoming.length > 0 && (
+            <Link to="/agenda" className="neta-card block hover:border-accent/40 transition">
+              <div className="flex items-center justify-between mb-3">
+                <span className="flex items-center gap-2 text-sm"><CalendarDays size={16} className="text-accent" /> Próximas citas</span>
+                <span className="text-xs text-accent">Ver agenda →</span>
+              </div>
+              <ul className="space-y-2.5">
+                {upcoming.map(a => (
+                  <li key={a.id} className="flex items-center gap-3 text-sm">
+                    <span className="text-muted w-28 shrink-0 tabular-nums">
+                      {relativeDate(a.date)}{a.time ? ` · ${a.time.slice(0, 5)}` : ''}
+                    </span>
+                    <span className="font-medium truncate flex-1 min-w-0">{a.client_name}</span>
+                    {a.procedure_type && <span className="text-accent text-xs truncate shrink-0 max-w-[40%]">{a.procedure_type}</span>}
+                  </li>
+                ))}
+              </ul>
+            </Link>
+          )}
+
           {/* Meta mensual — solo tiene sentido en la vista de mes */}
           {period.kind === 'month' && (
           <div className="neta-card relative overflow-hidden">

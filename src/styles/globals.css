@@ -19,6 +19,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Pantalla de la app (AppLayout montado): el documento NO debe scrollear.
+   El único scroll vive en <main>. Bloquear el body así impide que iOS deje
+   "scroll residual" al cerrar el teclado, que era lo que descolocaba la barra
+   inferior (la subía en la PWA y la dejaba oculta en Chrome). No se aplica a la
+   Landing/Login/Legal, que sí scrollean con el documento. */
+body.app-shell-lock {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
 }

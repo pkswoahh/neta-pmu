@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock, Wand2, Loader2 } from 'lucide-react'
+import { LayoutDashboard, CalendarDays, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock, Wand2, Loader2 } from 'lucide-react'
 import Logo from './Logo'
 import { useConfirm } from './Confirm'
 import { useToast } from './Toast'
@@ -12,54 +12,32 @@ import { cn, shortDate } from '@/lib/utils'
 
 const tabs = [
   { to: '/dashboard', label: 'Dashboard', shortLabel: 'Inicio', icon: LayoutDashboard, end: true },
+  { to: '/agenda', label: 'Agenda', shortLabel: 'Agenda', icon: CalendarDays, end: false },
   { to: '/procedimientos', label: 'Procedimientos', shortLabel: 'Servicios', icon: ClipboardList, end: false },
   { to: '/clientes', label: 'Clientes', shortLabel: 'Clientes', icon: Users, end: false },
   { to: '/gastos', label: 'Gastos', shortLabel: 'Gastos', icon: Wallet, end: false },
   { to: '/configuracion', label: 'Configuración', shortLabel: 'Config', icon: Settings, end: false },
 ]
 
-// El teclado de iOS no encoge el alto del viewport (dvh), así que el bottom
-// nav —al fondo del marco flex— se descoloca al escribir. Lo detectamos por
-// el foco en un campo de texto (señal directa de teclado abierto, más
-// confiable en iOS standalone que medir visualViewport) y ocultamos el nav.
-function useKeyboardOpen() {
-  const [open, setOpen] = useState(false)
+// En iOS el teclado no encoge el viewport: lo superpone y empuja el documento
+// hacia arriba, dejando un "scroll residual" al cerrarse que descolocaba el
+// bottom nav (lo subía en la PWA, lo dejaba oculto en Chrome al usar el botón
+// "esconder teclado", que cierra el teclado sin quitar el foco). En vez de
+// detectar el teclado (frágil), bloqueamos el scroll del documento mientras la
+// app está montada: el único scroll vive en <main>, así el documento nunca
+// queda descolocado y la barra inferior se mantiene fija al fondo del marco.
+function useLockDocumentScroll() {
   useEffect(() => {
-    const isTextField = (el: EventTarget | null): boolean => {
-      const n = el as HTMLElement | null
-      if (!n) return false
-      if (n.tagName === 'TEXTAREA' || n.isContentEditable) return true
-      if (n.tagName === 'INPUT') {
-        const t = (n as HTMLInputElement).type
-        return !['button', 'checkbox', 'radio', 'submit', 'reset', 'file', 'range', 'color', 'date'].includes(t)
-      }
-      return false
-    }
-    const onFocusIn = (e: FocusEvent) => { if (isTextField(e.target)) setOpen(true) }
-    const onFocusOut = () => {
-      setOpen(false)
-      // Al cerrar el teclado, iOS deja un scroll residual del documento que
-      // sube el marco y el bottom nav. Lo reseteamos cuando ya no hay campo
-      // enfocado (así no salta si solo cambiaste de un campo a otro).
-      setTimeout(() => {
-        if (!isTextField(document.activeElement)) window.scrollTo(0, 0)
-      }, 150)
-    }
-    document.addEventListener('focusin', onFocusIn)
-    document.addEventListener('focusout', onFocusOut)
-    return () => {
-      document.removeEventListener('focusin', onFocusIn)
-      document.removeEventListener('focusout', onFocusOut)
-    }
+    document.body.classList.add('app-shell-lock')
+    return () => document.body.classList.remove('app-shell-lock')
   }, [])
-  return open
 }
 
 export default function AppLayout() {
   const { signOut, user } = useAuth()
   const { profile, access } = useProfile()
   const loc = useLocation()
-  const keyboardOpen = useKeyboardOpen()
+  useLockDocumentScroll()
   const currentTitle = tabs.find(t => (t.end ? loc.pathname === t.to : loc.pathname.startsWith(t.to)))?.label ?? ''
   const isAdmin = profile?.role === 'admin' || profile?.role === 'support'
 
@@ -151,10 +129,12 @@ export default function AppLayout() {
           </div>
         </main>
 
-        {/* Bottom nav mobile — hijo flex, nunca se mueve. Se oculta con el
-            teclado abierto para que no se descoloque al escribir. */}
-        <nav className={cn('md:hidden flex-shrink-0 bg-bg/95 backdrop-blur-lg border-t border-border', keyboardOpen && 'hidden')} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="grid grid-cols-5">
+        {/* Bottom nav mobile — hijo flex al fondo del marco dvh. Con el scroll
+            del documento bloqueado (useLockDocumentScroll) nunca se descoloca:
+            mientras el teclado está abierto queda detrás de él, y al cerrarlo
+            vuelve a su sitio sin recargar. */}
+        <nav className="md:hidden flex-shrink-0 bg-bg/95 backdrop-blur-lg border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          <div className="grid grid-cols-6">
             {tabs.map(t => (
               <NavLink
                 key={t.to}

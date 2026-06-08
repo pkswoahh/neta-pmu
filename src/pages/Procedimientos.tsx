@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Edit2, Trash2, ClipboardList, Search, Download, X, Loader2, Phone, Calendar, CreditCard, MapPin, FileText, User, Check, UserPlus } from 'lucide-react'
+import { Plus, Edit2, Trash2, ClipboardList, Search, Download, X, Phone, Calendar, CreditCard, MapPin, FileText, User } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,15 +7,13 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
 import { useConfirm } from '@/components/Confirm'
 import Modal from '@/components/Modal'
-import MoneyInput from '@/components/MoneyInput'
 import PeriodSelector from '@/components/PeriodSelector'
 import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { ListSkeleton } from '@/components/Skeleton'
 import ClientHistoryModal from '@/components/ClientHistoryModal'
-import ClientNameInput from '@/components/ClientNameInput'
-import { aggregateClients, type ClientStats } from '@/lib/clients'
-import { clientKey, defaultPeriod, downloadCSV, formatMoney, periodRange, periodSlug, relativeDate, shortDate, todayISO, type Period } from '@/lib/utils'
+import ProcedureForm from '@/components/ProcedureForm'
+import { clientKey, defaultPeriod, downloadCSV, formatMoney, periodRange, periodSlug, relativeDate, shortDate, type Period } from '@/lib/utils'
 import type { Procedure } from '@/types/database'
 
 export default function Procedimientos() {
@@ -310,135 +308,3 @@ function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: strin
   )
 }
 
-interface FormProps {
-  editing: Procedure | null
-  onClose: () => void
-  onSaved: () => void
-  procedures: string[]
-  payments: string[]
-  sources: string[]
-  currency: string
-}
-
-function ProcedureForm({ editing, onClose, onSaved, procedures, payments, sources, currency }: FormProps) {
-  const { user } = useAuth()
-  const toast = useToast()
-
-  const [date, setDate] = useState(editing?.date ?? todayISO())
-  const [clientName, setClientName] = useState(editing?.client_name ?? '')
-  const [clientPhone, setClientPhone] = useState(editing?.client_phone ?? '')
-  const [procType, setProcType] = useState(editing?.procedure_type ?? procedures[0] ?? '')
-  const [amount, setAmount] = useState<number>(editing?.amount ? Number(editing.amount) : 0)
-  const [payment, setPayment] = useState(editing?.payment_method ?? payments[0] ?? '')
-  const [source, setSource] = useState(editing?.client_source ?? sources[0] ?? '')
-  const [notes, setNotes] = useState(editing?.notes ?? '')
-  const [busy, setBusy] = useState(false)
-  const [clients, setClients] = useState<ClientStats[]>([])
-
-  // Lista de clientes ya registrados para el autocompletar. Excluimos el
-  // procedimiento que se está editando, para no contarlo como "visita previa".
-  useEffect(() => {
-    if (!user) return
-    let cancelled = false
-    ;(async () => {
-      const { data } = await supabase.from('procedures').select('*').eq('user_id', user.id)
-      if (cancelled) return
-      const rows = ((data ?? []) as Procedure[]).filter(p => p.id !== editing?.id)
-      setClients(aggregateClients(rows))
-    })()
-    return () => { cancelled = true }
-  }, [user, editing])
-
-  const matchedClient = useMemo(() => {
-    const key = clientKey(clientName)
-    return key ? clients.find(c => c.key === key) : undefined
-  }, [clientName, clients])
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!user) return
-    if (!procType || !payment || !source) { toast.show('Configura tus opciones en Configuración', 'error'); return }
-    if (amount <= 0) { toast.show('Ingresa un valor válido', 'error'); return }
-    setBusy(true)
-    const payload = { user_id: user.id, date, client_name: clientName.trim(), client_phone: clientPhone.trim() || null, procedure_type: procType, amount, payment_method: payment, client_source: source, notes: notes.trim() || null }
-    const { error } = editing
-      ? await supabase.from('procedures').update(payload).eq('id', editing.id)
-      : await supabase.from('procedures').insert(payload)
-    setBusy(false)
-    if (error) toast.show(translateError(error), 'error')
-    else { toast.show(editing ? 'Actualizado' : 'Registrado', 'success'); onSaved() }
-  }
-
-  return (
-    <Modal open title={editing ? 'Editar procedimiento' : 'Nuevo procedimiento'} onClose={onClose}
-      footer={<>
-        <button type="button" onClick={onClose} className="neta-btn-ghost">Cancelar</button>
-        <button type="submit" form="proc-form" disabled={busy} className="neta-btn-primary flex items-center gap-2">
-          {busy && <Loader2 size={16} className="animate-spin" />} Guardar
-        </button>
-      </>}>
-      <form id="proc-form" onSubmit={submit} className="space-y-4">
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="neta-label">Fecha</label>
-            <input type="date" required value={date} onChange={e => setDate(e.target.value)} className="neta-input !w-auto" />
-          </div>
-          <div>
-            <label className="neta-label">Procedimiento</label>
-            {procedures.length === 0
-              ? <p className="text-xs text-negative bg-negative/10 border border-negative/20 rounded-xl px-3 py-2.5">Configura en Configuración</p>
-              : <Select value={procType} onChange={setProcType} options={procedures} />}
-          </div>
-        </div>
-        <div>
-          <label className="neta-label">Nombre del cliente</label>
-          <ClientNameInput
-            value={clientName}
-            onChange={setClientName}
-            onSelect={c => { setClientName(c.displayName); if (c.phone) setClientPhone(c.phone) }}
-            clients={clients}
-          />
-          {clientName.trim() && (
-            matchedClient ? (
-              <p className="text-xs text-positive mt-2 flex items-center gap-1.5">
-                <Check size={13} /> Cliente frecuente · {matchedClient.visits} {matchedClient.visits === 1 ? 'cita previa' : 'citas previas'}
-              </p>
-            ) : (
-              <p className="text-xs text-accent mt-2 flex items-center gap-1.5">
-                <UserPlus size={13} /> Cliente nuevo
-              </p>
-            )
-          )}
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="neta-label">Celular (opcional)</label>
-            <input type="tel" value={clientPhone} onChange={e => setClientPhone(e.target.value)} autoComplete="off" className="neta-input" placeholder="Opcional" />
-          </div>
-          <div>
-            <label className="neta-label">Valor cobrado</label>
-            <MoneyInput value={amount} onChange={setAmount} currency={currency} required />
-          </div>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="neta-label">Método de pago</label>
-            {payments.length === 0
-              ? <p className="text-xs text-negative bg-negative/10 border border-negative/20 rounded-xl px-3 py-2.5">Configura en Configuración</p>
-              : <Select value={payment} onChange={setPayment} options={payments} />}
-          </div>
-          <div>
-            <label className="neta-label">Origen del cliente</label>
-            {sources.length === 0
-              ? <p className="text-xs text-negative bg-negative/10 border border-negative/20 rounded-xl px-3 py-2.5">Configura en Configuración</p>
-              : <Select value={source} onChange={setSource} options={sources} />}
-          </div>
-        </div>
-        <div>
-          <label className="neta-label">Observaciones (opcional)</label>
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} autoComplete="off" className="neta-input min-h-[80px] resize-none" />
-        </div>
-      </form>
-    </Modal>
-  )
-}
