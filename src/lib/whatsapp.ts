@@ -1,28 +1,19 @@
 // Links de WhatsApp (wa.me) con mensaje pre-cargado.
 //
-// El reto: wa.me exige el número con código de país y solo dígitos, pero las
-// usuarias guardan el celular en formato libre (normalmente local, sin código).
-// Tomamos el país del perfil (derivado en onboarding) para anteponer el código
-// de marcación cuando falta. Solo manejamos los 6 países posibles del onboarding.
+// El celular se guarda ya en formato internacional (+código país + número)
+// mediante <PhoneInput>, así que aquí solo extraemos los dígitos. Los números
+// antiguos guardados sin código quedarían incompletos (caso marginal: datos
+// previos a esta versión).
 
-const DIAL_CODES: Record<string, string> = {
-  CO: '57', US: '1', AR: '54', MX: '52', VE: '58', ES: '34',
-}
-
-// Celular en formato libre → número apto para wa.me (dígitos + código de país).
-// Devuelve null si no hay dígitos.
-export function toWhatsappNumber(phone: string, country: string | null): string | null {
-  const dial = country ? DIAL_CODES[country] : undefined
-  let d = phone.replace(/\D/g, '')
-  if (!d) return null
-  if (d.startsWith('00')) d = d.slice(2)                       // prefijo internacional 00…
-  if (dial && d.startsWith(dial) && d.length >= dial.length + 8) return d  // ya trae código
-  if (d.startsWith('0')) d = d.slice(1)                        // prefijo nacional 0…
-  return dial ? dial + d : d
+// Celular → solo dígitos aptos para wa.me. null si no hay dígitos.
+export function toWhatsappNumber(phone: string): string | null {
+  let d = (phone ?? '').replace(/\D/g, '')
+  if (d.startsWith('00')) d = d.slice(2) // prefijo internacional 00…
+  return d || null
 }
 
 // Link wa.me con mensaje pre-cargado. null si el celular no es usable.
-export function whatsappLink(phone: string, country: string | null, message: string): string | null {
-  const num = toWhatsappNumber(phone, country)
+export function whatsappLink(phone: string, message: string): string | null {
+  const num = toWhatsappNumber(phone)
   return num ? `https://wa.me/${num}?text=${encodeURIComponent(message)}` : null
 }

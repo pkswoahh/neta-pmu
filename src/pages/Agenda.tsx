@@ -11,6 +11,7 @@ import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { ListSkeleton } from '@/components/Skeleton'
 import ClientNameInput from '@/components/ClientNameInput'
+import PhoneInput from '@/components/PhoneInput'
 import ProcedureForm from '@/components/ProcedureForm'
 import { aggregateClients, type ClientStats } from '@/lib/clients'
 import { whatsappLink } from '@/lib/whatsapp'
@@ -37,7 +38,7 @@ function longDate(iso: string): string {
 
 // Link de WhatsApp con plantilla de recordatorio ya armada. null si la cita
 // no tiene celular usable.
-function reminderUrl(a: Appointment, businessName: string | null, country: string | null): string | null {
+function reminderUrl(a: Appointment, businessName: string | null): string | null {
   if (!a.client_phone) return null
   const nombre = a.client_name.trim().split(/\s+/)[0]
   const proc = a.procedure_type ? ` de ${a.procedure_type}` : ''
@@ -45,7 +46,7 @@ function reminderUrl(a: Appointment, businessName: string | null, country: strin
   const cuando = `el ${longDate(a.date)}${hora ? ` a las ${hora}` : ''}`
   const negocio = businessName ? ` Te espero en ${businessName}.` : ''
   const msg = `¡Hola ${nombre}! 😊 Te recuerdo tu cita${proc} ${cuando}.${negocio} Cualquier cosa me escribes por aquí. ¡Nos vemos! 💕`
-  return whatsappLink(a.client_phone, country, msg)
+  return whatsappLink(a.client_phone, msg)
 }
 
 // Ordena por fecha y luego por hora; las citas sin hora van al final del día.
@@ -171,7 +172,7 @@ export default function Agenda() {
       {detail && (
         <AppointmentDetail
           appt={detail}
-          waUrl={reminderUrl(detail, profile?.business_name ?? null, profile?.country ?? null)}
+          waUrl={reminderUrl(detail, profile?.business_name ?? null)}
           onClose={() => setDetail(null)}
           onRegister={() => { setRegistering(detail); setDetail(null) }}
           onEdit={() => { setEditing(detail); setShowForm(true); setDetail(null) }}
@@ -355,6 +356,7 @@ function AppointmentForm({ editing, procedures, onClose, onSaved }: {
   onSaved: () => void
 }) {
   const { user } = useAuth()
+  const { profile } = useProfile()
   const toast = useToast()
 
   const [date, setDate] = useState(editing?.date ?? todayISO())
@@ -446,7 +448,7 @@ function AppointmentForm({ editing, procedures, onClose, onSaved }: {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="neta-label">Celular (opcional)</label>
-            <input type="tel" value={clientPhone} onChange={e => setClientPhone(e.target.value)} autoComplete="off" className="neta-input" placeholder="Opcional" />
+            <PhoneInput value={clientPhone} onChange={setClientPhone} defaultCountry={profile?.country ?? null} placeholder="Opcional" />
           </div>
           <div>
             <label className="neta-label">Procedimiento (opcional)</label>

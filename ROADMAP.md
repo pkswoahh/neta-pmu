@@ -7,7 +7,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 - [x] **Fix teclado iOS (Chrome + PWA)** — el bottom nav se descolocaba al cerrar el teclado (en Chrome desaparecía y tocaba recargar; en la PWA se subía). Causa: dependíamos de detectar el teclado por foco (que en Chrome no dispara al usar "esconder teclado") + scroll residual del documento. Solución de fondo: clase `body.app-shell-lock` bloquea el scroll del documento mientras la app está montada (el único scroll vive en `<main>`); se eliminó la detección por foco. `AppLayout.tsx` + `globals.css`.
 - [x] **Agenda / recordatorios de citas** — ver Nice-to-have (migración 011, pestaña, ciclo agendar→atender→registrar, tarjeta en Dashboard).
-- [x] **Recordatorio por WhatsApp** — botón verde en el detalle de la cita que abre wa.me con plantilla cálida ya armada (nombre, procedimiento, fecha legible, hora, negocio). Normaliza el celular anteponiendo el código de país del perfil (`src/lib/whatsapp.ts`). Reduce no-shows.
+- [x] **Recordatorio por WhatsApp** — botón verde en el detalle de la cita que abre wa.me con plantilla cálida ya armada (nombre, procedimiento, fecha legible, hora, negocio). Reduce no-shows. El celular usa `<PhoneInput>` con **selector de país por clienta** (no asume país del perfil: soporta clientela internacional como la de Carolina); guarda el número en formato internacional (+código). `src/lib/whatsapp.ts`, `src/lib/countries.ts`, `src/components/PhoneInput.tsx`. PhoneInput aplicado también al form de Procedimientos.
 
 ## 🗓️ Sesión 2026-06-07 — completado
 
