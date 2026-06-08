@@ -18,10 +18,27 @@ const tabs = [
   { to: '/configuracion', label: 'Configuración', shortLabel: 'Config', icon: Settings, end: false },
 ]
 
+// El teclado de iOS no encoge el alto del viewport (dvh), así que el
+// bottom nav —al fondo del marco flex— se descoloca al escribir. Detectamos
+// el teclado con visualViewport y ocultamos el nav mientras está abierto.
+function useKeyboardOpen() {
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const onResize = () => setOpen(window.innerHeight - vv.height > 150)
+    vv.addEventListener('resize', onResize)
+    onResize()
+    return () => vv.removeEventListener('resize', onResize)
+  }, [])
+  return open
+}
+
 export default function AppLayout() {
   const { signOut, user } = useAuth()
   const { profile, access } = useProfile()
   const loc = useLocation()
+  const keyboardOpen = useKeyboardOpen()
   const currentTitle = tabs.find(t => (t.end ? loc.pathname === t.to : loc.pathname.startsWith(t.to)))?.label ?? ''
   const isAdmin = profile?.role === 'admin' || profile?.role === 'support'
 
@@ -113,8 +130,9 @@ export default function AppLayout() {
           </div>
         </main>
 
-        {/* Bottom nav mobile — hijo flex, nunca se mueve */}
-        <nav className="md:hidden flex-shrink-0 bg-bg/95 backdrop-blur-lg border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {/* Bottom nav mobile — hijo flex, nunca se mueve. Se oculta con el
+            teclado abierto para que no se descoloque al escribir. */}
+        <nav className={cn('md:hidden flex-shrink-0 bg-bg/95 backdrop-blur-lg border-t border-border', keyboardOpen && 'hidden')} style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="grid grid-cols-5">
             {tabs.map(t => (
               <NavLink
