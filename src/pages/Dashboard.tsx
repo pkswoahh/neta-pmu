@@ -5,19 +5,19 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
-import MonthSelector from '@/components/MonthSelector'
+import PeriodSelector from '@/components/PeriodSelector'
 import MoneyInput from '@/components/MoneyInput'
 import { DashboardSkeleton } from '@/components/Skeleton'
 import { seedDemoData } from '@/lib/demo'
 import { translateError } from '@/lib/errors'
-import { clientKey, cn, currentMonth, formatMoney, monthLabel, monthRange, monthShort, shiftMonth } from '@/lib/utils'
+import { clientKey, cn, currentMonth, defaultPeriod, formatMoney, monthLabel, monthRange, monthShort, periodRange, previousPeriodLabel, previousPeriodRange, shiftMonth, type Period } from '@/lib/utils'
 import type { Expense, Procedure } from '@/types/database'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { profile, updateProfile } = useProfile()
 
-  const [month, setMonth] = useState(currentMonth())
+  const [period, setPeriod] = useState<Period>(defaultPeriod())
   const [procs, setProcs] = useState<Procedure[]>([])
   const [exps, setExps] = useState<Expense[]>([])
   const [prevProcs, setPrevProcs] = useState<Procedure[]>([])
@@ -33,9 +33,8 @@ export default function Dashboard() {
     let cancelled = false
     ;(async () => {
       setLoading(true)
-      const { start, end } = monthRange(month)
-      const prevMonth = shiftMonth(month, -1)
-      const { start: pStart, end: pEnd } = monthRange(prevMonth)
+      const { start, end } = periodRange(period)
+      const { start: pStart, end: pEnd } = previousPeriodRange(period)
 
       const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }, { count: procCount }, { count: expCount }] = await Promise.all([
         supabase.from('procedures').select('*').eq('user_id', user.id).gte('date', start).lt('date', end).order('date', { ascending: false }),
@@ -64,7 +63,7 @@ export default function Dashboard() {
       setLoading(false)
     })()
     return () => { cancelled = true }
-  }, [user, month])
+  }, [user, period])
 
   // Tendencia de los últimos 6 meses (anclada al mes actual, no al
   // seleccionado: es una vista estable de historia reciente).
@@ -102,7 +101,7 @@ export default function Dashboard() {
     const income = procs.reduce((s, p) => s + Number(p.amount), 0)
     const expenseTotal = exps.reduce((s, g) => s + Number(g.amount), 0)
     const profit = income - expenseTotal
-    const { start } = monthRange(month)
+    const { start } = periodRange(period)
     const prevIncome = prevProcs.reduce((s, p) => s + Number(p.amount), 0)
     const prevExpenseTotal = prevExps.reduce((s, g) => s + Number(g.amount), 0)
     const prevProfit = prevIncome - prevExpenseTotal
@@ -123,7 +122,7 @@ export default function Dashboard() {
       income, expenseTotal, profit, newClients, recurring,
       prevIncome, prevExpenseTotal, prevProfit, prevCount: prevProcs.length,
     }
-  }, [procs, exps, prevProcs, prevExps, historyNames, month])
+  }, [procs, exps, prevProcs, prevExps, historyNames, period])
 
   const goalPct = goal > 0 ? Math.min(999, Math.round((stats.income / goal) * 100)) : 0
   const goalReached = goal > 0 && stats.income >= goal
@@ -139,7 +138,7 @@ export default function Dashboard() {
   useEffect(() => { setDraftGoal(goal) }, [goal])
   async function saveGoal() { await updateProfile({ monthly_goal: draftGoal }); setEditingGoal(false) }
 
-  const prevLabel = monthLabel(shiftMonth(month, -1))
+  const prevLabel = previousPeriodLabel(period)
 
   if (!loading && isEmptyAccount) {
     return (
@@ -153,20 +152,18 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <div className="hidden md:flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {profile?.business_name ? `Hola, ${profile.business_name}` : 'Dashboard'}
-          </h1>
-          <p className="text-muted mt-2">Tu negocio, claro como el agua.</p>
-        </div>
-        <MonthSelector value={month} onChange={setMonth} />
+      <div className="hidden md:block">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {profile?.business_name ? `Hola, ${profile.business_name}` : 'Dashboard'}
+        </h1>
+        <p className="text-muted mt-2">Tu negocio, claro como el agua.</p>
       </div>
-      <div className="md:hidden"><MonthSelector value={month} onChange={setMonth} /></div>
+      <PeriodSelector value={period} onChange={setPeriod} />
 
       {loading ? <DashboardSkeleton /> : (
         <>
-          {/* Meta mensual */}
+          {/* Meta mensual — solo tiene sentido en la vista de mes */}
+          {period.kind === 'month' && (
           <div className="neta-card relative overflow-hidden">
             <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-accent/5 blur-3xl pointer-events-none" />
             <div className="flex items-center justify-between mb-3 relative">
@@ -194,6 +191,7 @@ export default function Dashboard() {
               </>
             )}
           </div>
+          )}
 
           {/* Cards resumen */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -234,7 +232,12 @@ export default function Dashboard() {
             />
           </div>
 
-          <TrendCard trend={trend} currency={currency} selected={month} onSelect={setMonth} />
+          <TrendCard
+            trend={trend}
+            currency={currency}
+            selected={period.kind === 'month' ? period.month : null}
+            onSelect={key => setPeriod({ ...period, kind: 'month', month: key })}
+          />
 
           <BreakdownCard title="Clientes por origen" items={sourceBreakdown} colorBar />
           <BreakdownCard title="Procedimientos por tipo" items={procBreakdown} />
@@ -339,7 +342,7 @@ function SummaryCard({
 function TrendCard({ trend, currency, selected, onSelect }: {
   trend: { key: string; income: number }[]
   currency: string
-  selected: string
+  selected: string | null
   onSelect: (key: string) => void
 }) {
   if (trend.length === 0) return null
@@ -410,7 +413,7 @@ function BreakdownCard({ title, items, valueAsMoney, currency, colorBar, negativ
     <div className="neta-card">
       <h3 className="text-base font-semibold mb-4">{title}</h3>
       {items.length === 0 || total === 0 ? (
-        <p className="text-sm text-muted py-2">Sin datos este mes.</p>
+        <p className="text-sm text-muted py-2">Sin datos en este periodo.</p>
       ) : (
         <ul className="space-y-3">
           {items.map(item => {

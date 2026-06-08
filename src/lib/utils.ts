@@ -129,6 +129,24 @@ export function periodSlug(p: Period): string {
   return p.month
 }
 
+// Rango [start, end) del periodo inmediatamente anterior, del mismo tamaño.
+// Para comparar "vs periodo anterior": semana→semana pasada, hoy→ayer,
+// rango de N días→los N días previos, mes→mes pasado.
+export function previousPeriodRange(p: Period): { start: string; end: string } {
+  if (p.kind === 'month') return monthRange(shiftMonth(p.month, -1))
+  const { start, end } = periodRange(p)
+  const days = Math.round((Date.parse(end) - Date.parse(start)) / 86400000)
+  return { start: addDaysISO(start, -days), end: start }
+}
+
+// Etiqueta del periodo anterior, para los deltas ("vs ...").
+export function previousPeriodLabel(p: Period): string {
+  if (p.kind === 'today') return 'ayer'
+  if (p.kind === 'week') return 'la semana pasada'
+  if (p.kind === 'range') return 'el periodo previo'
+  return monthLabel(shiftMonth(p.month, -1))
+}
+
 export function relativeDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
   const that = new Date(y, m - 1, d).getTime()

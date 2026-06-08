@@ -78,6 +78,7 @@ export default function Gastos() {
   }, [items, query, filterCategory])
 
   const hasFilters = query || filterCategory
+  const total = useMemo(() => filtered.reduce((s, g) => s + Number(g.amount), 0), [filtered])
 
   function handleExport() {
     if (!filtered.length) { toast.show('No hay datos para exportar', 'info'); return }
@@ -150,15 +151,25 @@ export default function Gastos() {
           </div>
         </div>
 
-        {hasFilters && !loading && (
-          <div className="flex items-center justify-between text-xs text-muted">
-            <span>{filtered.length} de {items.length} resultados</span>
-            <button onClick={() => { setQuery(''); setFilterCategory('') }} className="text-accent hover:underline flex items-center gap-1">
-              <X size={11} /> Limpiar filtros
-            </button>
-          </div>
-        )}
       </div>
+
+      {!loading && items.length > 0 && (
+        <div className="neta-card !p-3.5 flex items-center justify-between gap-3">
+          <div className="text-sm min-w-0">
+            <span className="font-medium">{filtered.length} {filtered.length === 1 ? 'gasto' : 'gastos'}</span>
+            {hasFilters && (
+              <>
+                <span className="text-muted"> de {items.length}</span>
+                <button onClick={() => { setQuery(''); setFilterCategory('') }} className="text-accent hover:underline ml-2 text-xs">Limpiar</button>
+              </>
+            )}
+          </div>
+          <div className="text-right shrink-0">
+            <div className="text-[11px] text-muted uppercase tracking-wider">Total</div>
+            <div className="font-semibold text-negative tabular-nums leading-tight">- {formatMoney(total, currency)}</div>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <ListSkeleton rows={5} />
