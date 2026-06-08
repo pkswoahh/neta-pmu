@@ -1,5 +1,5 @@
 import MonthSelector from './MonthSelector'
-import { cn } from '@/lib/utils'
+import { addDaysISO, cn } from '@/lib/utils'
 import type { Period, PeriodKind } from '@/lib/utils'
 
 const CHIPS: { kind: PeriodKind; label: string }[] = [
@@ -25,7 +25,13 @@ export default function PeriodSelector({ value, onChange, trailing }: Props) {
             <button
               key={c.kind}
               type="button"
-              onClick={() => onChange({ ...value, kind: c.kind })}
+              onClick={() => onChange(
+                // Al entrar a "Rango", si está en hoy–hoy (sin rango útil),
+                // arranca con una ventana de 7 días para que ambas fechas se muevan.
+                c.kind === 'range' && value.from >= value.to
+                  ? { ...value, kind: 'range', from: addDaysISO(value.to, -6) }
+                  : { ...value, kind: c.kind },
+              )}
               className={cn(
                 'flex-1 px-2 py-1.5 rounded-lg text-sm font-medium transition',
                 value.kind === c.kind ? 'bg-accent text-bg' : 'text-muted hover:text-primary hover:bg-bg',
@@ -39,7 +45,9 @@ export default function PeriodSelector({ value, onChange, trailing }: Props) {
       </div>
 
       {value.kind === 'month' && (
-        <MonthSelector value={value.month} onChange={m => onChange({ ...value, month: m })} />
+        <div className="flex justify-center">
+          <MonthSelector value={value.month} onChange={m => onChange({ ...value, month: m })} />
+        </div>
       )}
 
       {value.kind === 'range' && (

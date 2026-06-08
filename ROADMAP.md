@@ -91,7 +91,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 - [ ] Agenda / recordatorios de citas próximas
 - [ ] Notificaciones push al alcanzar la meta
-- [x] **Gráfico de tendencia mensual de ingresos** en Dashboard — barras de los últimos 6 meses (SVG-less, sin librería). Tocar una barra salta a ese mes. Anclado al mes actual.
+- [x] ~~Gráfico de tendencia mensual de ingresos~~ — **quitado 2026-06-08** por feedback de Roberto: confundía (anclado a 6 meses fijos, no reaccionaba al periodo) y aportaba poco frente a las tarjetas "vs periodo anterior". Dashboard más limpio.
 - [ ] Drag-and-drop para reordenar opciones en Configuración
 - [ ] Multi-idioma (EN para usuarias en USA)
 - [ ] Backup/exportar todos los datos en JSON (RGPD)

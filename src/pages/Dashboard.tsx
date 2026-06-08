@@ -10,7 +10,7 @@ import MoneyInput from '@/components/MoneyInput'
 import { DashboardSkeleton } from '@/components/Skeleton'
 import { seedDemoData } from '@/lib/demo'
 import { translateError } from '@/lib/errors'
-import { clientKey, cn, currentMonth, defaultPeriod, formatMoney, monthLabel, monthRange, monthShort, periodRange, previousPeriodLabel, previousPeriodRange, shiftMonth, type Period } from '@/lib/utils'
+import { clientKey, currentMonth, defaultPeriod, formatMoney, periodRange, previousPeriodLabel, previousPeriodRange, type Period } from '@/lib/utils'
 import type { Expense, Procedure } from '@/types/database'
 
 export default function Dashboard() {
@@ -26,7 +26,6 @@ export default function Dashboard() {
   const [historyNames, setHistoryNames] = useState<Map<string, string>>(new Map())
   const [totalProcCount, setTotalProcCount] = useState(0)
   const [totalExpenseCount, setTotalExpenseCount] = useState(0)
-  const [trend, setTrend] = useState<{ key: string; income: number }[]>([])
 
   useEffect(() => {
     if (!user) return
@@ -65,33 +64,6 @@ export default function Dashboard() {
     return () => { cancelled = true }
   }, [user, period])
 
-  // Tendencia de los últimos 6 meses (anclada al mes actual, no al
-  // seleccionado: es una vista estable de historia reciente).
-  useEffect(() => {
-    if (!user) return
-    let cancelled = false
-    ;(async () => {
-      const now = currentMonth()
-      const keys = Array.from({ length: 6 }, (_, i) => shiftMonth(now, -(5 - i)))
-      const { start } = monthRange(keys[0])
-      const { end } = monthRange(keys[5])
-      const { data } = await supabase
-        .from('procedures')
-        .select('amount,date')
-        .eq('user_id', user.id)
-        .gte('date', start)
-        .lt('date', end)
-      if (cancelled) return
-      const byMonth = new Map<string, number>(keys.map(k => [k, 0]))
-      ;(data ?? []).forEach((row: any) => {
-        const key = String(row.date).slice(0, 7)
-        if (byMonth.has(key)) byMonth.set(key, (byMonth.get(key) ?? 0) + Number(row.amount))
-      })
-      setTrend(keys.map(k => ({ key: k, income: byMonth.get(k) ?? 0 })))
-    })()
-    return () => { cancelled = true }
-  }, [user])
-
   const isEmptyAccount = totalProcCount === 0 && totalExpenseCount === 0
 
   const currency = profile?.currency ?? 'COP'
@@ -127,6 +99,11 @@ export default function Dashboard() {
   const goalPct = goal > 0 ? Math.min(999, Math.round((stats.income / goal) * 100)) : 0
   const goalReached = goal > 0 && stats.income >= goal
   const barWidth = goal > 0 ? Math.min(100, (stats.income / goal) * 100) : 0
+
+  // Un mes pasado ya está "cerrado": cambia el tono de la meta y oculta la
+  // comparación cuando el periodo es un rango libre (no tiene "anterior" claro).
+  const isPastMonth = period.kind === 'month' && period.month < currentMonth()
+  const showComparison = period.kind !== 'range'
 
   const sourceBreakdown = breakdownBy(procs, p => p.client_source)
   const procBreakdown = breakdownBy(procs, p => p.procedure_type)
@@ -182,12 +159,12 @@ export default function Dashboard() {
             ) : (
               <>
                 <p className="text-lg md:text-xl">
-                  Llevas <span className="font-semibold">{formatMoney(stats.income, currency)}</span> de <span className="text-muted">{formatMoney(goal, currency)}</span> — <span className={goalReached ? 'text-positive font-semibold' : 'text-accent font-semibold'}>{goalPct}%</span>
+                  {isPastMonth ? 'Cerró en' : 'Llevas'} <span className="font-semibold">{formatMoney(stats.income, currency)}</span> de <span className="text-muted">{formatMoney(goal, currency)}</span> — <span className={goalReached ? 'text-positive font-semibold' : 'text-accent font-semibold'}>{goalPct}%</span>
                 </p>
                 <div className="mt-4 h-2.5 bg-bg rounded-full overflow-hidden">
                   <div className="h-full transition-all duration-500" style={{ width: `${barWidth}%`, background: goalReached ? '#6EE7B7' : '#E8A598' }} />
                 </div>
-                {goalReached && <p className="text-positive text-xs mt-2">¡Meta superada! Vas {goalPct - 100}% por encima.</p>}
+                {goalReached && <p className="text-positive text-xs mt-2">{isPastMonth ? `Superó la meta por ${goalPct - 100}%.` : `¡Meta superada! Vas ${goalPct - 100}% por encima.`}</p>}
               </>
             )}
           </div>
@@ -199,7 +176,7 @@ export default function Dashboard() {
               label="Ingresos"
               value={formatMoney(stats.income, currency)}
               icon={<TrendingUp size={16} className="text-positive" />}
-              prev={stats.prevIncome}
+              prev={showComparison ? stats.prevIncome : undefined}
               current={stats.income}
               prevLabel={prevLabel}
             />
@@ -207,7 +184,7 @@ export default function Dashboard() {
               label="Gastos"
               value={formatMoney(stats.expenseTotal, currency)}
               icon={<TrendingDown size={16} className="text-negative" />}
-              prev={stats.prevExpenseTotal}
+              prev={showComparison ? stats.prevExpenseTotal : undefined}
               current={stats.expenseTotal}
               prevLabel={prevLabel}
               invertDelta
@@ -216,7 +193,7 @@ export default function Dashboard() {
               label="Ganancia neta"
               value={formatMoney(stats.profit, currency)}
               valueClass={stats.profit >= 0 ? 'text-positive' : 'text-negative'}
-              prev={stats.prevProfit}
+              prev={showComparison ? stats.prevProfit : undefined}
               current={stats.profit}
               prevLabel={prevLabel}
             />
@@ -225,22 +202,15 @@ export default function Dashboard() {
               value={String(procs.length)}
               icon={<ClipboardList size={16} className="text-accent" />}
               hint={`${stats.newClients} nuevos · ${stats.recurring} frecuentes`}
-              prev={stats.prevCount}
+              prev={showComparison ? stats.prevCount : undefined}
               current={procs.length}
               prevLabel={prevLabel}
               isCount
             />
           </div>
 
-          <TrendCard
-            trend={trend}
-            currency={currency}
-            selected={period.kind === 'month' ? period.month : null}
-            onSelect={key => setPeriod({ ...period, kind: 'month', month: key })}
-          />
-
           <BreakdownCard title="Clientes por origen" items={sourceBreakdown} colorBar />
-          <BreakdownCard title="Procedimientos por tipo" items={procBreakdown} />
+          <BreakdownCard title="Procedimientos por tipo" items={procBreakdown} topBadge="Más vendido" />
           <BreakdownCard title="Ingresos por método de pago" items={paymentBreakdown} valueAsMoney currency={currency} />
           <BreakdownCard title="Egresos por categoría" items={expenseBreakdown} valueAsMoney currency={currency} negative />
         </>
@@ -339,58 +309,6 @@ function SummaryCard({
   )
 }
 
-function TrendCard({ trend, currency, selected, onSelect }: {
-  trend: { key: string; income: number }[]
-  currency: string
-  selected: string | null
-  onSelect: (key: string) => void
-}) {
-  if (trend.length === 0) return null
-  const max = Math.max(...trend.map(t => t.income), 0)
-  const headline = trend.find(t => t.key === selected) ?? trend[trend.length - 1]
-
-  return (
-    <div className="neta-card">
-      <div className="flex items-baseline justify-between gap-3 mb-1">
-        <h3 className="text-base font-semibold">Tendencia de ingresos</h3>
-        <span className="text-xs text-muted">Últimos 6 meses</span>
-      </div>
-      <p className="text-sm text-muted mb-5">
-        {monthLabel(headline.key)}:{' '}
-        <span className="text-primary font-semibold">{formatMoney(headline.income, currency)}</span>
-      </p>
-
-      <div className="flex items-stretch gap-2 h-32">
-        {trend.map(t => {
-          const pct = max > 0 ? (t.income / max) * 100 : 0
-          const isSel = t.key === selected
-          return (
-            <button
-              key={t.key}
-              onClick={() => onSelect(t.key)}
-              className="flex-1 h-full flex flex-col items-center group"
-              aria-label={`${monthLabel(t.key)}: ${formatMoney(t.income, currency)}`}
-            >
-              <div className="flex-1 w-full flex items-end justify-center min-h-0">
-                <div
-                  className={cn(
-                    'w-full max-w-[2.75rem] rounded-t-md transition-all duration-500',
-                    isSel ? 'bg-accent' : 'bg-surface group-hover:bg-accent/40',
-                  )}
-                  style={{ height: `${t.income > 0 ? Math.max(pct, 5) : 2}%` }}
-                />
-              </div>
-              <span className={cn('text-[11px] mt-2 transition-colors', isSel ? 'text-accent font-medium' : 'text-muted')}>
-                {monthShort(t.key)}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 interface BreakdownItem { label: string; count: number; value: number }
 
 function breakdownBy<T extends { amount?: number }>(rows: T[], keyFn: (r: T) => string): BreakdownItem[] {
@@ -405,8 +323,8 @@ function breakdownBy<T extends { amount?: number }>(rows: T[], keyFn: (r: T) => 
   return [...map.values()].sort((a, b) => b.value - a.value || b.count - a.count)
 }
 
-function BreakdownCard({ title, items, valueAsMoney, currency, colorBar, negative }: {
-  title: string; items: BreakdownItem[]; valueAsMoney?: boolean; currency?: string; colorBar?: boolean; negative?: boolean
+function BreakdownCard({ title, items, valueAsMoney, currency, colorBar, negative, topBadge }: {
+  title: string; items: BreakdownItem[]; valueAsMoney?: boolean; currency?: string; colorBar?: boolean; negative?: boolean; topBadge?: string
 }) {
   const total = items.reduce((s, i) => s + (valueAsMoney ? i.value : i.count), 0)
   return (
@@ -416,13 +334,18 @@ function BreakdownCard({ title, items, valueAsMoney, currency, colorBar, negativ
         <p className="text-sm text-muted py-2">Sin datos en este periodo.</p>
       ) : (
         <ul className="space-y-3">
-          {items.map(item => {
+          {items.map((item, idx) => {
             const portion = valueAsMoney ? item.value : item.count
             const pct = total > 0 ? Math.round((portion / total) * 100) : 0
             return (
               <li key={item.label}>
                 <div className="flex items-baseline justify-between gap-3 mb-1.5">
-                  <span className="text-sm truncate flex-1">{item.label}</span>
+                  <span className="text-sm flex-1 min-w-0 flex items-center gap-2">
+                    <span className="truncate">{item.label}</span>
+                    {idx === 0 && topBadge && items.length > 1 && (
+                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-accent bg-accent/10 px-1.5 py-0.5 rounded-full">{topBadge}</span>
+                    )}
+                  </span>
                   <span className="text-sm font-medium tabular-nums">
                     {valueAsMoney ? `${negative ? '-' : ''}${formatMoney(item.value, currency ?? 'COP')}` : `${item.count}`}
                   </span>

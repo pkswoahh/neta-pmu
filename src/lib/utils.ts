@@ -85,7 +85,9 @@ export type PeriodKind = 'today' | 'week' | 'month' | 'range'
 export interface Period { kind: PeriodKind; month: string; from: string; to: string }
 
 export function defaultPeriod(): Period {
-  return { kind: 'month', month: currentMonth(), from: todayISO(), to: todayISO() }
+  // El rango arranca con los últimos 7 días para que ambas fechas sean editables
+  // (si from===to el input "Hasta" queda atascado en hoy).
+  return { kind: 'month', month: currentMonth(), from: addDaysISO(todayISO(), -6), to: todayISO() }
 }
 
 export function addDaysISO(iso: string, n: number): string {
