@@ -42,9 +42,9 @@ export default function AppLayout() {
   const isAdmin = profile?.role === 'admin' || profile?.role === 'support'
 
   return (
-    <div className="h-dvh relative z-10 flex">
+    <div className="app-shell-frame h-dvh relative z-10 flex">
       {/* Sidebar desktop */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-bg/60 backdrop-blur-sm h-dvh flex-shrink-0 px-5 py-7">
+      <aside className="app-shell-frame hidden md:flex flex-col w-64 border-r border-border bg-bg/60 backdrop-blur-sm h-dvh flex-shrink-0 px-5 py-7">
         <div className="mb-8 px-2">
           <Logo size="lg" />
         </div>

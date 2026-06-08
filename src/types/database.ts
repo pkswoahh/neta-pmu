@@ -32,6 +32,7 @@ export interface Profile {
   billing_plan: 'monthly' | 'annual' | null
   country: string | null
   invitation_code_used: string | null
+  reminder_template: string | null
 }
 
 export interface InvitationCode {
@@ -80,7 +81,7 @@ export interface Expense {
   is_demo: boolean
 }
 
-export type AppointmentStatus = 'scheduled' | 'done' | 'canceled'
+export type AppointmentStatus = 'scheduled' | 'done' | 'canceled' | 'no_show'
 
 export interface Appointment {
   id: string

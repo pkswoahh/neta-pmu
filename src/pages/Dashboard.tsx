@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [totalProcCount, setTotalProcCount] = useState(0)
   const [totalExpenseCount, setTotalExpenseCount] = useState(0)
   const [upcoming, setUpcoming] = useState<Appointment[]>([])
+  const [apptStats, setApptStats] = useState({ done: 0, canceled: 0, no_show: 0, scheduled: 0 })
 
   useEffect(() => {
     if (!user) return
@@ -36,7 +37,7 @@ export default function Dashboard() {
       const { start, end } = periodRange(period)
       const { start: pStart, end: pEnd } = previousPeriodRange(period)
 
-      const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }, { count: procCount }, { count: expCount }, { data: apptData }] = await Promise.all([
+      const [{ data: pData }, { data: eData }, { data: ppData }, { data: peData }, { data: allProcs }, { count: procCount }, { count: expCount }, { data: apptData }, { data: apptPeriodData }] = await Promise.all([
         supabase.from('procedures').select('*').eq('user_id', user.id).gte('date', start).lt('date', end).order('date', { ascending: false }),
         supabase.from('expenses').select('*').eq('user_id', user.id).gte('date', start).lt('date', end),
         supabase.from('procedures').select('amount,date').eq('user_id', user.id).gte('date', pStart).lt('date', pEnd),
@@ -45,6 +46,7 @@ export default function Dashboard() {
         supabase.from('procedures').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('expenses').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('appointments').select('*').eq('user_id', user.id).eq('status', 'scheduled').gte('date', todayISO()).order('date', { ascending: true }).order('time', { ascending: true, nullsFirst: false }).limit(6),
+        supabase.from('appointments').select('status').eq('user_id', user.id).gte('date', start).lt('date', end),
       ])
       if (cancelled) return
       const map = new Map<string, string>()
@@ -62,6 +64,13 @@ export default function Dashboard() {
       setTotalProcCount(procCount ?? 0)
       setTotalExpenseCount(expCount ?? 0)
       setUpcoming((apptData ?? []) as Appointment[])
+      const ap = (apptPeriodData ?? []) as { status: string }[]
+      setApptStats({
+        done: ap.filter(x => x.status === 'done').length,
+        canceled: ap.filter(x => x.status === 'canceled').length,
+        no_show: ap.filter(x => x.status === 'no_show').length,
+        scheduled: ap.filter(x => x.status === 'scheduled').length,
+      })
       setLoading(false)
     })()
     return () => { cancelled = true }
@@ -237,6 +246,29 @@ export default function Dashboard() {
           <BreakdownCard title="Procedimientos por tipo" items={procBreakdown} topBadge="Más vendido" />
           <BreakdownCard title="Ingresos por método de pago" items={paymentBreakdown} valueAsMoney currency={currency} />
           <BreakdownCard title="Egresos por categoría" items={expenseBreakdown} valueAsMoney currency={currency} negative />
+
+          {(apptStats.done + apptStats.canceled + apptStats.no_show + apptStats.scheduled) > 0 && (
+            <div className="neta-card">
+              <h3 className="text-base font-semibold mb-4">Citas del periodo</h3>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <div className="text-2xl font-semibold text-positive tabular-nums">{apptStats.done}</div>
+                  <div className="text-[11px] text-muted mt-1 uppercase tracking-wider">Atendidas</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-semibold tabular-nums">{apptStats.canceled}</div>
+                  <div className="text-[11px] text-muted mt-1 uppercase tracking-wider">Canceladas</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-semibold text-amber-300 tabular-nums">{apptStats.no_show}</div>
+                  <div className="text-[11px] text-muted mt-1 uppercase tracking-wider">No vinieron</div>
+                </div>
+              </div>
+              {apptStats.scheduled > 0 && (
+                <p className="text-xs text-muted text-center mt-4">{apptStats.scheduled} {apptStats.scheduled === 1 ? 'cita agendada' : 'citas agendadas'} en este periodo aún sin atender.</p>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

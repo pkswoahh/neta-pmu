@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Trash2, Edit2, Check, X, Loader2, CreditCard, ChevronRight } from 'lucide-react'
+import { Plus, Trash2, Edit2, Check, X, Loader2, CreditCard, ChevronRight, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useProfile } from '@/contexts/ProfileContext'
@@ -10,6 +10,7 @@ import { useToast } from '@/components/Toast'
 import { useConfirm } from '@/components/Confirm'
 import MoneyInput from '@/components/MoneyInput'
 import Select from '@/components/Select'
+import { DEFAULT_REMINDER_TEMPLATE } from '@/lib/whatsapp'
 import type { OptionType, UserOption } from '@/types/database'
 
 const CURRENCIES = [
@@ -158,6 +159,8 @@ export default function Configuracion() {
         </div>
       </div>
 
+      <ReminderTemplateCard />
+
       {SECTIONS.map(s => (
         <OptionsSection key={s.type} type={s.type} title={s.title} hint={s.hint} onChanged={refresh} />
       ))}
@@ -167,6 +170,65 @@ export default function Configuracion() {
         {' · '}
         <Link to="/privacidad" className="hover:text-primary transition-colors">Política de Privacidad</Link>
       </p>
+    </div>
+  )
+}
+
+function ReminderTemplateCard() {
+  const { profile, updateProfile } = useProfile()
+  const toast = useToast()
+  const [text, setText] = useState(profile?.reminder_template ?? DEFAULT_REMINDER_TEMPLATE)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => { setText(profile?.reminder_template ?? DEFAULT_REMINDER_TEMPLATE) }, [profile])
+
+  async function save() {
+    setSaving(true)
+    try {
+      await updateProfile({ reminder_template: text.trim() || null })
+      toast.show('Plantilla guardada', 'success')
+    } catch (e: any) {
+      toast.show(translateError(e), 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="neta-card space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <MessageCircle size={18} className="text-accent" /> Recordatorio de WhatsApp
+        </h2>
+        <p className="text-xs text-muted mt-1">El mensaje que se envía al recordar una cita. Personalízalo a tu estilo.</p>
+      </div>
+      <textarea
+        value={text}
+        onChange={e => setText(e.target.value)}
+        autoComplete="off"
+        className="neta-input min-h-[120px] resize-none"
+      />
+      <div className="text-xs text-muted">
+        Toca para insertar:
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {['{nombre}', '{procedimiento}', '{fecha}', '{hora}', '{negocio}'].map(p => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setText(t => `${t}${p}`)}
+              className="bg-bg border border-border rounded-lg px-2 py-1 text-accent hover:border-accent/50 transition"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-between items-center pt-1">
+        <button onClick={() => setText(DEFAULT_REMINDER_TEMPLATE)} className="text-xs text-muted hover:text-primary">Restablecer</button>
+        <button onClick={save} disabled={saving} className="neta-btn-primary px-8 flex items-center justify-center gap-2">
+          {saving && <Loader2 size={16} className="animate-spin" />} Guardar
+        </button>
+      </div>
     </div>
   )
 }

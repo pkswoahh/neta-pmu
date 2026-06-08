@@ -32,6 +32,14 @@ body.app-shell-lock {
   overscroll-behavior: none;
 }
 
+/* En la PWA instalada (standalone) no hay barras de navegador, así que 100dvh
+   se queda corto y deja un hueco abajo. Ahí el marco debe llenar toda la
+   pantalla (100% del body bloqueado). En navegador seguimos con 100dvh, que sí
+   respeta las barras dinámicas de Safari/Chrome. */
+@media all and (display-mode: standalone) {
+  .app-shell-frame { height: 100%; }
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
