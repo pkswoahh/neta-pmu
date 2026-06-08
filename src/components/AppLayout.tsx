@@ -18,18 +18,31 @@ const tabs = [
   { to: '/configuracion', label: 'Configuración', shortLabel: 'Config', icon: Settings, end: false },
 ]
 
-// El teclado de iOS no encoge el alto del viewport (dvh), así que el
-// bottom nav —al fondo del marco flex— se descoloca al escribir. Detectamos
-// el teclado con visualViewport y ocultamos el nav mientras está abierto.
+// El teclado de iOS no encoge el alto del viewport (dvh), así que el bottom
+// nav —al fondo del marco flex— se descoloca al escribir. Lo detectamos por
+// el foco en un campo de texto (señal directa de teclado abierto, más
+// confiable en iOS standalone que medir visualViewport) y ocultamos el nav.
 function useKeyboardOpen() {
   const [open, setOpen] = useState(false)
   useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    const onResize = () => setOpen(window.innerHeight - vv.height > 150)
-    vv.addEventListener('resize', onResize)
-    onResize()
-    return () => vv.removeEventListener('resize', onResize)
+    const isTextField = (el: EventTarget | null): boolean => {
+      const n = el as HTMLElement | null
+      if (!n) return false
+      if (n.tagName === 'TEXTAREA' || n.isContentEditable) return true
+      if (n.tagName === 'INPUT') {
+        const t = (n as HTMLInputElement).type
+        return !['button', 'checkbox', 'radio', 'submit', 'reset', 'file', 'range', 'color', 'date'].includes(t)
+      }
+      return false
+    }
+    const onFocusIn = (e: FocusEvent) => { if (isTextField(e.target)) setOpen(true) }
+    const onFocusOut = () => setOpen(false)
+    document.addEventListener('focusin', onFocusIn)
+    document.addEventListener('focusout', onFocusOut)
+    return () => {
+      document.removeEventListener('focusin', onFocusIn)
+      document.removeEventListener('focusout', onFocusOut)
+    }
   }, [])
   return open
 }
