@@ -45,13 +45,17 @@ Para desarrollo local, agregar también:
 - `http://localhost:5173/**`
 - `http://localhost:5173/cambiar-password`
 
-## Email confirmation
+## Email / SMTP
 
-Actualmente **DESACTIVADO** (toggle off en Supabase → Auth → Sign In / Providers → Email → "Confirm email").
+**SMTP propio (Resend) — ACTIVO desde 2026-06-07.** Dominio `netapmu.com` verificado en Resend (DKIM + SPF + DMARC en Netlify DNS, todos en el subdominio `send.` / `resend._domainkey` para no tocar el MX de ImprovMX que recibe `hola@`). SMTP configurado en Supabase → Authentication → Emails → SMTP Settings:
+- Host `smtp.resend.com` · Port `465` · Username `resend` · Password = API key de Resend (`re_...`)
+- Sender: `hola@netapmu.com` / `Neta.`
+- Probado con "recuperar contraseña" → llega a Recibidos (no spam) desde `hola@netapmu.com`. ✅
 
-El código (Login.tsx) ya maneja ambos casos. Cuando salga el dominio propio:
-1. Activar toggle en Supabase
-2. Personalizar el template del email en Supabase → Auth → Templates
+**Email confirmation: todavía DESACTIVADO** (toggle off en Supabase → Auth → Sign In / Providers → Email → "Confirm email"). El código (Login.tsx) ya maneja ambos casos. Para activarlo (Fase 2, pendiente):
+1. Supabase → Auth → Email Templates → "Confirm signup": pegar `docs/email-templates/confirm-signup.html` y subject `Confirma tu cuenta — Neta.`
+2. Activar el toggle "Confirm email"
+3. Probar registro de cuenta nueva → debe llegar el correo de confirmación
 
 ## Cómo correr una migración SQL
 

@@ -157,8 +157,8 @@ Diseño completo en `docs/ADMIN.md`.
 - [x] **Bottom nav mobile fijo** — reemplazado position fixed por flex column (fix iOS Safari).
 - [ ] Analytics (Plausible / PostHog) para entender uso real
 - [ ] Sentry o similar para tracking de errores
-- [ ] SMTP personalizado (Resend) — enviar desde hola@netapmu.com en lugar de mail.supabase.io
-- [ ] **Personalizar template "Confirm signup"** en Supabase → Auth → Email Templates (plantilla lista pasada a Roberto el 2026-05-15, falta pegarla en el panel)
+- [x] **SMTP personalizado (Resend)** — ✅ 2026-06-07. Dominio verificado, SMTP en Supabase, correos salen desde hola@netapmu.com y llegan a Recibidos. Ver `docs/DEPLOY.md`.
+- [ ] **Activar "Confirm email" (Fase 2)** — pegar `docs/email-templates/confirm-signup.html` en Supabase → Auth → Email Templates → "Confirm signup" (subject: `Confirma tu cuenta — Neta.`), luego prender el toggle "Confirm email" y probar registro. La plantilla ya está en el repo.
 - [x] **Subir polling post-pago** de 10s a ~48s con intervalos crecientes (13 reintentos espaciados 1s→7s en `MiSuscripcion.tsx`). Cubre el caso del webhook de Lemon que tardó 50s y evita el banner amber prematuro.
 
 ---
