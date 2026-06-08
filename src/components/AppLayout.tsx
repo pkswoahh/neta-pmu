@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, CalendarDays, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock, Wand2, Loader2 } from 'lucide-react'
 import Logo from './Logo'
@@ -33,11 +33,62 @@ function useLockDocumentScroll() {
   }, [])
 }
 
+// Pull-to-refresh propio sobre el contenedor de scroll. Como bloqueamos el
+// scroll del documento (por el teclado) y la PWA instalada tampoco trae el
+// gesto nativo, lo recreamos: al estar arriba del todo y arrastrar hacia abajo,
+// mostramos un indicador y al soltar recargamos. Funciona igual en navegador y
+// PWA. Solo se activa con gestos táctiles (en escritorio no hace nada).
+function usePullToRefresh(ref: React.RefObject<HTMLElement>) {
+  const [pull, setPull] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
+  const pullRef = useRef(0)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const MAX = 80
+    const TRIGGER = 60
+    let startY = 0
+    let active = false
+    const set = (v: number) => { pullRef.current = v; setPull(v) }
+    const onStart = (e: TouchEvent) => {
+      active = el.scrollTop <= 0
+      startY = e.touches[0].clientY
+    }
+    const onMove = (e: TouchEvent) => {
+      if (!active) return
+      if (el.scrollTop > 0) { active = false; set(0); return }
+      const dy = e.touches[0].clientY - startY
+      set(dy > 0 ? Math.min(dy * 0.4, MAX) : 0)
+    }
+    const onEnd = () => {
+      if (!active) return
+      active = false
+      if (pullRef.current >= TRIGGER) {
+        setRefreshing(true)
+        setTimeout(() => window.location.reload(), 200)
+      } else {
+        set(0)
+      }
+    }
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove', onMove, { passive: true })
+    el.addEventListener('touchend', onEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+    }
+  }, [ref])
+  return { pull, refreshing }
+}
+
 export default function AppLayout() {
   const { signOut, user } = useAuth()
   const { profile, access } = useProfile()
   const loc = useLocation()
   useLockDocumentScroll()
+  const mainRef = useRef<HTMLElement>(null)
+  const { pull, refreshing } = usePullToRefresh(mainRef)
   const currentTitle = tabs.find(t => (t.end ? loc.pathname === t.to : loc.pathname.startsWith(t.to)))?.label ?? ''
   const isAdmin = profile?.role === 'admin' || profile?.role === 'support'
 
@@ -123,9 +174,23 @@ export default function AppLayout() {
         <DemoBanner />
 
         {/* Área de contenido con scroll interno */}
-        <main className="flex-1 overflow-y-auto min-h-0">
-          <div className="px-5 md:px-10 py-6 md:py-10 max-w-5xl mx-auto">
-            <Outlet />
+        <main ref={mainRef} className="flex-1 overflow-y-auto min-h-0 relative">
+          {/* Indicador de pull-to-refresh */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 flex justify-center z-20"
+            style={{ height: pull, opacity: Math.min(pull / 60, 1) }}
+          >
+            <Loader2 size={20} className={cn('text-accent mt-2', (refreshing || pull >= 60) && 'animate-spin')} />
+          </div>
+          <div
+            style={{
+              transform: pull ? `translateY(${pull}px)` : undefined,
+              transition: pull ? 'none' : 'transform 0.2s ease',
+            }}
+          >
+            <div className="px-5 md:px-10 py-6 md:py-10 max-w-5xl mx-auto">
+              <Outlet />
+            </div>
           </div>
         </main>
 

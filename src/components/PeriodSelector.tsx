@@ -45,9 +45,7 @@ export default function PeriodSelector({ value, onChange, trailing }: Props) {
       </div>
 
       {value.kind === 'month' && (
-        <div className="flex justify-center">
-          <MonthSelector value={value.month} onChange={m => onChange({ ...value, month: m })} />
-        </div>
+        <MonthSelector value={value.month} onChange={m => onChange({ ...value, month: m })} />
       )}
 
       {value.kind === 'range' && (
