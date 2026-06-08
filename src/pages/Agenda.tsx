@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, CalendarDays, Clock, Phone, FileText, Loader2, Check, UserPlus, Edit2, Trash2, ClipboardCheck, Ban } from 'lucide-react'
+import { Plus, CalendarDays, Clock, Phone, FileText, Loader2, Check, UserPlus, Edit2, Trash2, ClipboardCheck, Ban, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
@@ -13,6 +13,7 @@ import { ListSkeleton } from '@/components/Skeleton'
 import ClientNameInput from '@/components/ClientNameInput'
 import ProcedureForm from '@/components/ProcedureForm'
 import { aggregateClients, type ClientStats } from '@/lib/clients'
+import { whatsappLink } from '@/lib/whatsapp'
 import { addDaysISO, clientKey, relativeDate, shortDate, todayISO } from '@/lib/utils'
 import type { Appointment, Procedure } from '@/types/database'
 
@@ -23,6 +24,28 @@ function formatTime(t: string | null): string | null {
   const period = h < 12 ? 'a.m.' : 'p.m.'
   const h12 = h % 12 === 0 ? 12 : h % 12
   return `${h12}:${String(m).padStart(2, '0')} ${period}`
+}
+
+const DOW = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
+const MON = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+
+// Fecha legible para el mensaje: "miércoles 11 de junio".
+function longDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${DOW[new Date(y, m - 1, d).getDay()]} ${d} de ${MON[m - 1]}`
+}
+
+// Link de WhatsApp con plantilla de recordatorio ya armada. null si la cita
+// no tiene celular usable.
+function reminderUrl(a: Appointment, businessName: string | null, country: string | null): string | null {
+  if (!a.client_phone) return null
+  const nombre = a.client_name.trim().split(/\s+/)[0]
+  const proc = a.procedure_type ? ` de ${a.procedure_type}` : ''
+  const hora = formatTime(a.time)
+  const cuando = `el ${longDate(a.date)}${hora ? ` a las ${hora}` : ''}`
+  const negocio = businessName ? ` Te espero en ${businessName}.` : ''
+  const msg = `¡Hola ${nombre}! 😊 Te recuerdo tu cita${proc} ${cuando}.${negocio} Cualquier cosa me escribes por aquí. ¡Nos vemos! 💕`
+  return whatsappLink(a.client_phone, country, msg)
 }
 
 // Ordena por fecha y luego por hora; las citas sin hora van al final del día.
@@ -148,6 +171,7 @@ export default function Agenda() {
       {detail && (
         <AppointmentDetail
           appt={detail}
+          waUrl={reminderUrl(detail, profile?.business_name ?? null, profile?.country ?? null)}
           onClose={() => setDetail(null)}
           onRegister={() => { setRegistering(detail); setDetail(null) }}
           onEdit={() => { setEditing(detail); setShowForm(true); setDetail(null) }}
@@ -239,8 +263,9 @@ function Group({ title, appts, showDate, muted, tone, onTap }: {
   )
 }
 
-function AppointmentDetail({ appt: a, onClose, onRegister, onEdit, onCancel, onDelete }: {
+function AppointmentDetail({ appt: a, waUrl, onClose, onRegister, onEdit, onCancel, onDelete }: {
   appt: Appointment
+  waUrl: string | null
   onClose: () => void
   onRegister: () => void
   onEdit: () => void
@@ -270,6 +295,19 @@ function AppointmentDetail({ appt: a, onClose, onRegister, onEdit, onCancel, onD
 
         {scheduled && (
           <div className="space-y-2 border-t border-border pt-5">
+            {waUrl ? (
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition hover:opacity-90 active:opacity-80"
+                style={{ backgroundColor: '#25D366', color: '#0B141A' }}
+              >
+                <MessageCircle size={16} /> Recordar por WhatsApp
+              </a>
+            ) : (
+              <p className="text-xs text-muted text-center px-2">Agrega el celular del cliente para poder recordarle por WhatsApp.</p>
+            )}
             <button onClick={onRegister} className="neta-btn-primary w-full flex items-center justify-center gap-2">
               <ClipboardCheck size={16} /> Registrar atención
             </button>
