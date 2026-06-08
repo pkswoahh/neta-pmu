@@ -15,7 +15,6 @@ import PhoneInput from '@/components/PhoneInput'
 import ProcedureForm from '@/components/ProcedureForm'
 import { aggregateClients, type ClientStats } from '@/lib/clients'
 import { whatsappLink, renderReminder } from '@/lib/whatsapp'
-import { CURRENCY_TO_COUNTRY } from '@/lib/constants'
 import { addDaysISO, clientKey, relativeDate, shortDate, todayISO } from '@/lib/utils'
 import type { Appointment, Procedure } from '@/types/database'
 
@@ -505,7 +504,7 @@ function AppointmentForm({ editing, procedures, onClose, onSaved }: {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="neta-label">Celular (opcional)</label>
-            <PhoneInput value={clientPhone} onChange={setClientPhone} defaultCountry={CURRENCY_TO_COUNTRY[profile?.currency ?? 'COP'] ?? null} placeholder="Opcional" />
+            <PhoneInput value={clientPhone} onChange={setClientPhone} defaultCountry={profile?.country ?? null} placeholder="Opcional" />
           </div>
           <div>
             <label className="neta-label">Procedimiento (opcional)</label>

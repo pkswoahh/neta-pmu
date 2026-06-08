@@ -10,6 +10,7 @@ import { useToast } from '@/components/Toast'
 import { useConfirm } from '@/components/Confirm'
 import MoneyInput from '@/components/MoneyInput'
 import Select from '@/components/Select'
+import { COUNTRIES, flagEmoji } from '@/lib/countries'
 import { DEFAULT_REMINDER_TEMPLATE } from '@/lib/whatsapp'
 import type { OptionType, UserOption } from '@/types/database'
 
@@ -53,12 +54,14 @@ export default function Configuracion() {
   const confirm = useConfirm()
 
   const [businessName, setBusinessName] = useState(profile?.business_name ?? '')
+  const [country, setCountry] = useState(profile?.country ?? 'CO')
   const [currency, setCurrency] = useState(profile?.currency ?? 'COP')
   const [goal, setGoal] = useState<number>(profile?.monthly_goal ?? 0)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setBusinessName(profile?.business_name ?? '')
+    setCountry(profile?.country ?? 'CO')
     setCurrency(profile?.currency ?? 'COP')
     setGoal(profile?.monthly_goal ?? 0)
   }, [profile])
@@ -86,6 +89,7 @@ export default function Configuracion() {
     try {
       await updateProfile({
         business_name: businessName.trim() || null,
+        country,
         currency,
         monthly_goal: goal,
       })
@@ -139,6 +143,14 @@ export default function Configuracion() {
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
+            <label className="neta-label">País</label>
+            <Select
+              value={country}
+              onChange={setCountry}
+              options={COUNTRIES.map(c => ({ value: c.iso, label: `${flagEmoji(c.iso)} ${c.name}` }))}
+            />
+          </div>
+          <div>
             <label className="neta-label">Moneda</label>
             <Select
               value={currency}
@@ -146,10 +158,10 @@ export default function Configuracion() {
               options={CURRENCIES.map(c => ({ value: c.code, label: `${c.code} — ${c.name}` }))}
             />
           </div>
-          <div>
-            <label className="neta-label">Meta mensual de ingresos</label>
-            <MoneyInput value={goal} onChange={setGoal} currency={currency} />
-          </div>
+        </div>
+        <div>
+          <label className="neta-label">Meta mensual de ingresos</label>
+          <MoneyInput value={goal} onChange={setGoal} currency={currency} />
         </div>
         <div className="flex justify-center pt-1">
           <button onClick={saveProfile} disabled={saving} className="neta-btn-primary px-8 flex items-center justify-center gap-2">

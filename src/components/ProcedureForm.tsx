@@ -3,6 +3,7 @@ import { Loader2, Check, UserPlus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
 import { useAuth } from '@/contexts/AuthContext'
+import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
 import Modal from '@/components/Modal'
 import MoneyInput from '@/components/MoneyInput'
@@ -10,7 +11,6 @@ import Select from '@/components/Select'
 import ClientNameInput from '@/components/ClientNameInput'
 import PhoneInput from '@/components/PhoneInput'
 import { aggregateClients, type ClientStats } from '@/lib/clients'
-import { CURRENCY_TO_COUNTRY } from '@/lib/constants'
 import { clientKey, todayISO } from '@/lib/utils'
 import type { Procedure } from '@/types/database'
 
@@ -37,6 +37,7 @@ interface Props {
 
 export default function ProcedureForm({ editing, onClose, onSaved, procedures, payments, sources, currency, prefill }: Props) {
   const { user } = useAuth()
+  const { profile } = useProfile()
   const toast = useToast()
 
   const [date, setDate] = useState(editing?.date ?? prefill?.date ?? todayISO())
@@ -128,7 +129,7 @@ export default function ProcedureForm({ editing, onClose, onSaved, procedures, p
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="neta-label">Celular (opcional)</label>
-            <PhoneInput value={clientPhone} onChange={setClientPhone} defaultCountry={CURRENCY_TO_COUNTRY[currency] ?? null} placeholder="Opcional" />
+            <PhoneInput value={clientPhone} onChange={setClientPhone} defaultCountry={profile?.country ?? null} placeholder="Opcional" />
           </div>
           <div>
             <label className="neta-label">Valor cobrado</label>

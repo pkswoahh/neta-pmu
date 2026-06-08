@@ -7,7 +7,7 @@ import { useProfile } from '@/contexts/ProfileContext'
 import { useToast } from '@/components/Toast'
 import { supabase } from '@/lib/supabase'
 import { translateError } from '@/lib/errors'
-import { CURRENCY_TO_COUNTRY } from '@/lib/constants'
+import { COUNTRIES, flagEmoji } from '@/lib/countries'
 import { Loader2, ArrowRight } from 'lucide-react'
 
 const CURRENCIES = [
@@ -25,6 +25,7 @@ export default function Onboarding() {
   const toast = useToast()
   const nav = useNavigate()
   const [name, setName] = useState('')
+  const [country, setCountry] = useState('CO')
   const [currency, setCurrency] = useState('COP')
   const [busy, setBusy] = useState(false)
 
@@ -38,8 +39,8 @@ export default function Onboarding() {
     try {
       await updateProfile({
         business_name: name.trim(),
+        country,
         currency,
-        country: CURRENCY_TO_COUNTRY[currency] ?? null,
       })
       toast.show('Listo. Configura tus opciones cuando quieras', 'success')
       nav('/configuracion', { replace: true })
@@ -72,7 +73,15 @@ export default function Onboarding() {
             />
           </div>
           <div>
-            <label className="neta-label">Moneda</label>
+            <label className="neta-label">¿En qué país estás?</label>
+            <Select
+              value={country}
+              onChange={setCountry}
+              options={COUNTRIES.map(c => ({ value: c.iso, label: `${flagEmoji(c.iso)} ${c.name}` }))}
+            />
+          </div>
+          <div>
+            <label className="neta-label">¿En qué moneda cobras?</label>
             <Select
               value={currency}
               onChange={setCurrency}
