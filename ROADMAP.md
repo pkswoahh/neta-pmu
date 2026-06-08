@@ -15,8 +15,12 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 - [x] Filtro de periodo Hoy/Semana/Mes/Rango en Procedimientos y Gastos (`PeriodSelector`) + buscador alineado al Select
 - [x] Campo de nombre inteligente con autocompletar de clientes (`ClientNameInput`) — mide nuevo/frecuente por consistencia de nombres
 
-### ⏳ PENDIENTE (siguiente sesión)
-- [ ] **Rangos de fecha en el Dashboard** — reutilizar `PeriodSelector`. Decidido: comparar "vs periodo anterior" (periodo equivalente previo) y ocultar la tarjeta de Meta mensual fuera de "Mes". El gráfico de 6 meses no se toca.
+## 🗓️ Sesión 2026-06-07 (cont.) — completado
+
+- [x] **Rangos de fecha en el Dashboard** — `PeriodSelector` (Hoy/Semana/Mes/Rango) reemplaza al selector de mes. Comparación "vs periodo anterior" equivalente (`previousPeriodRange`/`previousPeriodLabel`): hoy→ayer, semana→semana pasada, rango N días→N días previos, mes→mes pasado. Meta mensual oculta fuera de "Mes". Gráfico de tendencia de 6 meses intacto; resalta barra solo en vista de Mes.
+- [x] **Totales en Procedimientos y Gastos** — barra de resumen con conteo + total del periodo, refleja lo filtrado y absorbe el contador "N de M" + limpiar filtros.
+- [x] **Fix safe-area en PWA standalone** — header mobile del AppLayout y nav de la Landing respetan `env(safe-area-inset-top)`; ya no quedan tapados bajo el Dynamic Island en iPhone.
+- [x] **Estado offline** — `OfflineBanner` global: "Sin conexión a internet" mientras dure, "Conexión restablecida" al volver. (Ver sección Seguridad.)
 
 
 ---
@@ -168,7 +172,7 @@ Diseño completo en `docs/ADMIN.md`.
 - [ ] Plan de respuesta ante incidentes (incluso si es informal)
 - [ ] **Service Worker — manejo de actualizaciones**
   - [x] ~~Cambiar `registerType` a `prompt` y mostrar banner persistente con botón "Actualizar ahora"~~ (componente `UpdatePrompt`)
-  - [ ] Definir página/estado offline (cuando no hay red y no está en cache).
+  - [x] ~~Definir página/estado offline~~ — `OfflineBanner` global avisa "Sin conexión" / "Conexión restablecida". (El shell ya está precacheado, así que la app abre offline; lo que faltaba era el aviso porque Supabase es NetworkOnly.)
   - [ ] Revisar runtime caching para llamadas a Supabase (ahora son `NetworkOnly`).
 
 ---
