@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/Toast'
 import { ConfirmProvider } from '@/components/Confirm'
 import Particles from '@/components/Particles'
 import UpdatePrompt from '@/components/UpdatePrompt'
+import OfflineBanner from '@/components/OfflineBanner'
 import InvitationCodeRedeemer from '@/components/InvitationCodeRedeemer'
 import AppLayout from '@/components/AppLayout'
 import AdminLayout from '@/components/admin/AdminLayout'
@@ -37,6 +38,7 @@ export default function App() {
           <ProfileProvider>
             <Particles />
             <UpdatePrompt />
+            <OfflineBanner />
             <InvitationCodeRedeemer />
             <Routes>
               <Route path="/" element={<Landing />} />
