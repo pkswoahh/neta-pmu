@@ -45,8 +45,9 @@ function usePullToRefresh(ref: React.RefObject<HTMLElement>) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const MAX = 80
-    const TRIGGER = 60
+    const DEAD = 16   // zona muerta: ignora arrastres pequeños (no twitchy)
+    const MAX = 90
+    const TRIGGER = 75 // hay que jalar deliberado (~166px de dedo) para recargar
     let startY = 0
     let active = false
     const set = (v: number) => { pullRef.current = v; setPull(v) }
@@ -58,7 +59,7 @@ function usePullToRefresh(ref: React.RefObject<HTMLElement>) {
       if (!active) return
       if (el.scrollTop > 0) { active = false; set(0); return }
       const dy = e.touches[0].clientY - startY
-      set(dy > 0 ? Math.min(dy * 0.4, MAX) : 0)
+      set(dy > DEAD ? Math.min((dy - DEAD) * 0.5, MAX) : 0)
     }
     const onEnd = () => {
       if (!active) return
@@ -152,9 +153,14 @@ export default function AppLayout() {
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Header mobile */}
         <header className="md:hidden flex-shrink-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-          <div className="px-5 py-4 flex items-center justify-between">
-            <Logo size="md" />
-            <div className="flex items-center gap-1">
+          <div className="px-5 py-4 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Logo size="md" />
+              {profile?.business_name && (
+                <span className="text-sm text-muted truncate border-l border-border pl-2">{profile.business_name}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
               {isAdmin && (
                 <NavLink to="/admin" className="text-gold p-2 -mr-1" aria-label="Panel admin">
                   <Shield size={18} />

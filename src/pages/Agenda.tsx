@@ -71,8 +71,8 @@ function reminderUrl(a: Appointment, businessName: string | null, template: stri
   } else {
     const proc = a.procedure_type ? ` de ${a.procedure_type}` : ''
     const cuando = `el ${longDate(a.date)}${hora ? ` a las ${hora}` : ''}`
-    const negocio = businessName ? ` Te espero en ${businessName}.` : ''
-    msg = `¡Hola ${nombre}! 😊 Te recuerdo tu cita${proc} ${cuando}.${negocio} Cualquier cosa me escribes por aquí. ¡Nos vemos! 💕`
+    const negocio = businessName ? ` — ${businessName}` : ''
+    msg = `Hola ${nombre}, te recordamos tu cita${proc} ${cuando}. Por favor confirma tu asistencia. Quedamos atentos.${negocio}`
   }
   return whatsappLink(a.client_phone, msg)
 }

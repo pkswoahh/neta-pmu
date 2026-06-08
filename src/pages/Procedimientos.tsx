@@ -118,8 +118,8 @@ export default function Procedimientos() {
                 <Download size={15} />
                 <span className="hidden sm:inline">CSV</span>
               </button>
-              <button onClick={() => { setEditing(null); setShowForm(true) }} className="md:hidden neta-btn-primary px-4 py-2.5 text-sm flex items-center gap-1.5 shrink-0" aria-label="Nuevo procedimiento">
-                <Plus size={16} />
+              <button onClick={() => { setEditing(null); setShowForm(true) }} className="md:hidden neta-btn-primary px-5 py-2.5 text-sm flex items-center gap-1.5 shrink-0" aria-label="Nuevo procedimiento">
+                <Plus size={18} /> Nuevo
               </button>
             </>
           }
@@ -179,7 +179,7 @@ export default function Procedimientos() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="font-medium truncate">{p.client_name}</span>
-                    <span className="text-xs text-muted">{relativeDate(p.date)}</span>
+                    <span className="text-xs text-muted">{shortDate(p.date)}</span>
                   </div>
                   <div className="text-sm text-muted truncate">
                     <span className="text-accent font-medium">{p.procedure_type}</span> · {p.payment_method}

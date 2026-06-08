@@ -21,7 +21,7 @@ export function whatsappLink(phone: string, message: string): string | null {
 // Plantilla editable de recordatorio (se muestra en Configuración como punto de
 // partida cuando la usuaria quiere personalizar su mensaje).
 export const DEFAULT_REMINDER_TEMPLATE =
-  '¡Hola {nombre}! 😊 Te recuerdo tu cita de {procedimiento} el {fecha} a las {hora}. Te espero en {negocio}. Cualquier cosa me escribes por aquí. ¡Nos vemos! 💕'
+  'Hola {nombre}, te recordamos tu cita de {procedimiento} el {fecha} a las {hora}. Por favor confirma tu asistencia. Quedamos atentos. — {negocio}'
 
 export interface ReminderVars {
   nombre: string

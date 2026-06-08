@@ -57,6 +57,17 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* En iOS los inputs nativos date/time tienen un ancho intrínseco que se
+   desborda del contenedor (rompía el margen y permitía scroll horizontal).
+   Forzamos que respeten el ancho disponible. */
+input[type="date"],
+input[type="time"] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

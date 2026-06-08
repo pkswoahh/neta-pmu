@@ -12,7 +12,7 @@ import PeriodSelector from '@/components/PeriodSelector'
 import Select from '@/components/Select'
 import Empty from '@/components/Empty'
 import { ListSkeleton } from '@/components/Skeleton'
-import { clientKey, defaultPeriod, downloadCSV, formatMoney, periodRange, periodSlug, relativeDate, shortDate, todayISO, type Period } from '@/lib/utils'
+import { clientKey, defaultPeriod, downloadCSV, formatMoney, periodRange, periodSlug, shortDate, todayISO, type Period } from '@/lib/utils'
 import type { Expense } from '@/types/database'
 
 export default function Gastos() {
@@ -112,8 +112,8 @@ export default function Gastos() {
                 <Download size={15} />
                 <span className="hidden sm:inline">CSV</span>
               </button>
-              <button onClick={() => { setEditing(null); setShowForm(true) }} className="md:hidden neta-btn-primary px-4 py-2.5 text-sm flex items-center gap-1.5 shrink-0" aria-label="Nuevo gasto">
-                <Plus size={16} />
+              <button onClick={() => { setEditing(null); setShowForm(true) }} className="md:hidden neta-btn-primary px-5 py-2.5 text-sm flex items-center gap-1.5 shrink-0" aria-label="Nuevo gasto">
+                <Plus size={18} /> Nuevo
               </button>
             </>
           }
@@ -172,7 +172,7 @@ export default function Gastos() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="font-medium truncate">{g.description}</span>
-                  <span className="text-xs text-muted">{relativeDate(g.date)}</span>
+                  <span className="text-xs text-muted">{shortDate(g.date)}</span>
                 </div>
                 <div className="text-sm text-muted truncate">{g.category}</div>
               </div>

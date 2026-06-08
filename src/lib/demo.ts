@@ -26,6 +26,22 @@ function dateAgo(days: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+// Celulares de ejemplo por clienta (formato internacional, +57 ilustrativo).
+// Así el detalle, el botón de WhatsApp y la búsqueda por celular se ven con datos.
+const DEMO_PHONES: Record<string, string> = {
+  'Lucía Peña': '+573001234567',
+  'Andrea Gil': '+573012345678',
+  'Camila Soto': '+573023456789',
+  'Daniela Mora': '+573034567890',
+  'Mariana Cortés': '+573045678901',
+  'Valentina Ríos': '+573056789012',
+  'Sara Luna': '+573067890123',
+  'Paula Vega': '+573078901234',
+  'Natalia Ruiz': '+573089012345',
+  'Carla Méndez': '+573090123456',
+  'Gabriela Díaz': '+573101234567',
+}
+
 // Montos en "USD base"; se escalan a la moneda de la usuaria.
 // Cubre ~6 meses para que la tendencia, los rangos y la comparación
 // "vs periodo anterior" se vean con datos. Clientes que repiten entre
@@ -92,7 +108,7 @@ export async function seedDemoData(userId: string, currency: string): Promise<vo
     user_id: userId,
     date: dateAgo(p.daysAgo),
     client_name: p.client_name,
-    client_phone: null,
+    client_phone: DEMO_PHONES[p.client_name] ?? null,
     procedure_type: p.procedure_type,
     amount: scale(p.usd, currency),
     payment_method: p.payment_method,
