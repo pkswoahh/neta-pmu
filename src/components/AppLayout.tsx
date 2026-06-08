@@ -84,7 +84,7 @@ export default function AppLayout() {
       {/* Columna principal — flex column que ocupa el alto restante */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Header mobile */}
-        <header className="md:hidden flex-shrink-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border">
+        <header className="md:hidden flex-shrink-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="px-5 py-4 flex items-center justify-between">
             <Logo size="md" />
             <div className="flex items-center gap-1">
