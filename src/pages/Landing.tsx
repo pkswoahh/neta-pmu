@@ -118,6 +118,7 @@ function Nav() {
         'sticky top-0 z-30 transition-all',
         scrolled ? 'bg-bg/85 backdrop-blur-md border-b border-border' : 'bg-transparent',
       )}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="max-w-6xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
         <Logo size="md" />
