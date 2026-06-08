@@ -343,7 +343,7 @@ function BreakdownCard({ title, items, valueAsMoney, currency, colorBar, negativ
                   <span className="text-sm flex-1 min-w-0 flex items-center gap-2">
                     <span className="truncate">{item.label}</span>
                     {idx === 0 && topBadge && items.length > 1 && (
-                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-accent bg-accent/10 px-1.5 py-0.5 rounded-full">{topBadge}</span>
+                      <span className="shrink-0 text-[10px] uppercase tracking-wide text-positive bg-positive/10 px-1.5 py-0.5 rounded-full">{topBadge}</span>
                     )}
                   </span>
                   <span className="text-sm font-medium tabular-nums">

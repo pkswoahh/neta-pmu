@@ -36,7 +36,15 @@ function useKeyboardOpen() {
       return false
     }
     const onFocusIn = (e: FocusEvent) => { if (isTextField(e.target)) setOpen(true) }
-    const onFocusOut = () => setOpen(false)
+    const onFocusOut = () => {
+      setOpen(false)
+      // Al cerrar el teclado, iOS deja un scroll residual del documento que
+      // sube el marco y el bottom nav. Lo reseteamos cuando ya no hay campo
+      // enfocado (así no salta si solo cambiaste de un campo a otro).
+      setTimeout(() => {
+        if (!isTextField(document.activeElement)) window.scrollTo(0, 0)
+      }, 150)
+    }
     document.addEventListener('focusin', onFocusIn)
     document.addEventListener('focusout', onFocusOut)
     return () => {
