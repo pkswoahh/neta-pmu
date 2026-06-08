@@ -52,10 +52,9 @@ Para desarrollo local, agregar también:
 - Sender: `hola@netapmu.com` / `Neta.`
 - Probado con "recuperar contraseña" → llega a Recibidos (no spam) desde `hola@netapmu.com`. ✅
 
-**Email confirmation: todavía DESACTIVADO** (toggle off en Supabase → Auth → Sign In / Providers → Email → "Confirm email"). El código (Login.tsx) ya maneja ambos casos. Para activarlo (Fase 2, pendiente):
-1. Supabase → Auth → Email Templates → "Confirm signup": pegar `docs/email-templates/confirm-signup.html` y subject `Confirma tu cuenta — Neta.`
-2. Activar el toggle "Confirm email"
-3. Probar registro de cuenta nueva → debe llegar el correo de confirmación
+**Email confirmation: ACTIVO desde 2026-06-07.** Toggle "Confirm email" ON (Supabase → Auth → Sign In / Providers → Email). Template "Confirm signup" = `docs/email-templates/confirm-signup.html`, subject `Confirma tu cuenta — Neta.`. Probado end-to-end con un +alias de Gmail: registro → pantalla "revisa tu correo" → correo llega a Recibidos → "Confirmar mi cuenta" → onboarding. ✅
+
+(Registro con Google OAuth no dispara confirmación — Google ya verifica el email. Solo el flujo email/password.)
 
 ## Cómo correr una migración SQL
 

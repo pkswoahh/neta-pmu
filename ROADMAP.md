@@ -63,7 +63,7 @@ Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
 
 - [x] ~~Recuperación de contraseña~~
 - [x] ~~Modal de confirmación bonito~~
-- [ ] **Confirmación de email en producción** — el código ya está listo (pantalla 📬 + errores en español). Solo activar el toggle "Confirm email" en Supabase → Sign In / Providers cuando salga el dominio propio.
+- [x] **Confirmación de email en producción** — ✅ 2026-06-07. Toggle ON + template con marca + SMTP Resend. Probado end-to-end.
 - [x] **Pasarela de pago (Lemon Squeezy) — Test mode completo** — ✅ cuenta aprobada · productos Test mode ($12/$108) · Migración 008 · Edge Functions desplegadas · `/suscribirse` con toggle · test mensual y anual end-to-end · `/mi-suscripcion` con info de plan · botón "Gestionar suscripción" abre portal de Lemon · loader + polling 10s post-pago · portal de cancelación validado · gating con trial vencido validado. **Próximo:** pasar a Live mode cuando haya primera clienta.
 - [x] ~~**Landing reposicionada al ICP "independiente que trabaja sola"**~~ (2026-05-12) — hero, dolores y sección "Para quién" reescritos. Sección "Para quién" pasa de listar otras profesiones (lashistas, manicuristas, nutricionistas) a perfiles de la micropigmentadora independiente sola (cabina en casa, renta puesto, atiende a domicilio, recién egresada, lleva años sin claridad, sin equipo). Pricing: toggle mensual/anual ($12 / $9 efectivo). Trial unificado a 30 días en todos los CTAs. FAQ con pregunta "tengo equipo, ¿sirve?" que dirige al plan Estudio futuro.
 - [x] **Trial de 14 días** — trigger `handle_new_user` da `trial_ends_at = now() + 14 days` automáticamente. Gating funcional vía `computeAccess()`.
@@ -158,7 +158,7 @@ Diseño completo en `docs/ADMIN.md`.
 - [ ] Analytics (Plausible / PostHog) para entender uso real
 - [ ] Sentry o similar para tracking de errores
 - [x] **SMTP personalizado (Resend)** — ✅ 2026-06-07. Dominio verificado, SMTP en Supabase, correos salen desde hola@netapmu.com y llegan a Recibidos. Ver `docs/DEPLOY.md`.
-- [ ] **Activar "Confirm email" (Fase 2)** — pegar `docs/email-templates/confirm-signup.html` en Supabase → Auth → Email Templates → "Confirm signup" (subject: `Confirma tu cuenta — Neta.`), luego prender el toggle "Confirm email" y probar registro. La plantilla ya está en el repo.
+- [x] **"Confirm email" ACTIVO (Fase 2)** — ✅ 2026-06-07. Template `docs/email-templates/confirm-signup.html` pegado, toggle ON, probado end-to-end (registro → correo a Recibidos → confirmar → onboarding).
 - [x] **Subir polling post-pago** de 10s a ~48s con intervalos crecientes (13 reintentos espaciados 1s→7s en `MiSuscripcion.tsx`). Cubre el caso del webhook de Lemon que tardó 50s y evita el banner amber prematuro.
 
 ---
