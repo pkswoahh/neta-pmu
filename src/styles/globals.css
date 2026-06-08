@@ -6,8 +6,11 @@
   color-scheme: dark;
 }
 
-html, body, #root {
+html, body {
   height: 100%;
+}
+#root {
+  min-height: 100%;
 }
 
 body {
@@ -17,27 +20,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-}
-
-/* Pantalla de la app (AppLayout montado): el documento NO debe scrollear.
-   El único scroll vive en <main>. Bloquear el body así impide que iOS deje
-   "scroll residual" al cerrar el teclado, que era lo que descolocaba la barra
-   inferior (la subía en la PWA y la dejaba oculta en Chrome). No se aplica a la
-   Landing/Login/Legal, que sí scrollean con el documento. */
-body.app-shell-lock {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
-}
-
-/* En la PWA instalada (standalone) no hay barras de navegador, así que 100dvh
-   se queda corto y deja un hueco abajo. Ahí el marco debe llenar toda la
-   pantalla (100% del body bloqueado). En navegador seguimos con 100dvh, que sí
-   respeta las barras dinámicas de Safari/Chrome. */
-@media all and (display-mode: standalone) {
-  .app-shell-frame { height: 100%; }
 }
 
 * {
@@ -57,15 +39,19 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* En iOS los inputs nativos date/time tienen un ancho intrínseco que se
-   desborda del contenedor (rompía el margen y permitía scroll horizontal).
-   Forzamos que respeten el ancho disponible. */
+/* En iOS los inputs nativos date/time IGNORAN el ancho a menos que les
+   quitemos su apariencia nativa. Sin esto se desbordaban del margen y permitían
+   scroll horizontal. Con appearance:none respetan el ancho y se alinean a la
+   izquierda como cualquier input; al tocarlos siguen abriendo el calendario. */
 input[type="date"],
 input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+  text-align: left;
 }
 
 ::-webkit-scrollbar {

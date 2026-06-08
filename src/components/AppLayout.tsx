@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, CalendarDays, ClipboardList, Users, Wallet, Settings, LogOut, Shield, AlertTriangle, Clock, Wand2, Loader2 } from 'lucide-react'
 import Logo from './Logo'
@@ -19,84 +19,38 @@ const tabs = [
   { to: '/configuracion', label: 'Configuración', shortLabel: 'Config', icon: Settings, end: false },
 ]
 
-// En iOS el teclado no encoge el viewport: lo superpone y empuja el documento
-// hacia arriba, dejando un "scroll residual" al cerrarse que descolocaba el
-// bottom nav (lo subía en la PWA, lo dejaba oculto en Chrome al usar el botón
-// "esconder teclado", que cierra el teclado sin quitar el foco). En vez de
-// detectar el teclado (frágil), bloqueamos el scroll del documento mientras la
-// app está montada: el único scroll vive en <main>, así el documento nunca
-// queda descolocado y la barra inferior se mantiene fija al fondo del marco.
-function useLockDocumentScroll() {
+// El documento scrollea de forma nativa (pull-to-refresh y rebote naturales).
+// El bottom nav es fijo abajo; el único problema en iOS es que el teclado,
+// al abrirse, no encoge el viewport de layout, así que un elemento fijo
+// quedaría flotando sobre el teclado. Solución: detectamos el teclado con la
+// API visualViewport (mide el alto VISIBLE) y ocultamos el nav mientras está
+// abierto. Es confiable incluso con el botón "esconder teclado" de Chrome,
+// porque visualViewport vuelve a crecer al cerrarse el teclado sin depender
+// del foco.
+function useKeyboardOpen() {
+  const [open, setOpen] = useState(false)
   useEffect(() => {
-    document.body.classList.add('app-shell-lock')
-    return () => document.body.classList.remove('app-shell-lock')
+    const vv = window.visualViewport
+    if (!vv) return
+    const onResize = () => setOpen(window.innerHeight - vv.height > 150)
+    vv.addEventListener('resize', onResize)
+    return () => vv.removeEventListener('resize', onResize)
   }, [])
-}
-
-// Pull-to-refresh propio sobre el contenedor de scroll. Como bloqueamos el
-// scroll del documento (por el teclado) y la PWA instalada tampoco trae el
-// gesto nativo, lo recreamos: al estar arriba del todo y arrastrar hacia abajo,
-// mostramos un indicador y al soltar recargamos. Funciona igual en navegador y
-// PWA. Solo se activa con gestos táctiles (en escritorio no hace nada).
-function usePullToRefresh(ref: React.RefObject<HTMLElement>) {
-  const [pull, setPull] = useState(0)
-  const [refreshing, setRefreshing] = useState(false)
-  const pullRef = useRef(0)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const DEAD = 16   // zona muerta: ignora arrastres pequeños (no twitchy)
-    const MAX = 90
-    const TRIGGER = 75 // hay que jalar deliberado (~166px de dedo) para recargar
-    let startY = 0
-    let active = false
-    const set = (v: number) => { pullRef.current = v; setPull(v) }
-    const onStart = (e: TouchEvent) => {
-      active = el.scrollTop <= 0
-      startY = e.touches[0].clientY
-    }
-    const onMove = (e: TouchEvent) => {
-      if (!active) return
-      if (el.scrollTop > 0) { active = false; set(0); return }
-      const dy = e.touches[0].clientY - startY
-      set(dy > DEAD ? Math.min((dy - DEAD) * 0.5, MAX) : 0)
-    }
-    const onEnd = () => {
-      if (!active) return
-      active = false
-      if (pullRef.current >= TRIGGER) {
-        setRefreshing(true)
-        setTimeout(() => window.location.reload(), 200)
-      } else {
-        set(0)
-      }
-    }
-    el.addEventListener('touchstart', onStart, { passive: true })
-    el.addEventListener('touchmove', onMove, { passive: true })
-    el.addEventListener('touchend', onEnd, { passive: true })
-    return () => {
-      el.removeEventListener('touchstart', onStart)
-      el.removeEventListener('touchmove', onMove)
-      el.removeEventListener('touchend', onEnd)
-    }
-  }, [ref])
-  return { pull, refreshing }
+  return open
 }
 
 export default function AppLayout() {
   const { signOut, user } = useAuth()
-  const { profile, access } = useProfile()
+  const { profile } = useProfile()
   const loc = useLocation()
-  useLockDocumentScroll()
-  const mainRef = useRef<HTMLElement>(null)
-  const { pull, refreshing } = usePullToRefresh(mainRef)
+  const keyboardOpen = useKeyboardOpen()
   const currentTitle = tabs.find(t => (t.end ? loc.pathname === t.to : loc.pathname.startsWith(t.to)))?.label ?? ''
   const isAdmin = profile?.role === 'admin' || profile?.role === 'support'
 
   return (
-    <div className="app-shell-frame h-dvh relative z-10 flex">
-      {/* Sidebar desktop */}
-      <aside className="app-shell-frame hidden md:flex flex-col w-64 border-r border-border bg-bg/60 backdrop-blur-sm h-dvh flex-shrink-0 px-5 py-7">
+    <div className="relative z-10 min-h-dvh">
+      {/* Sidebar desktop — fija; el contenido scrollea debajo */}
+      <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-64 border-r border-border bg-bg/60 backdrop-blur-sm px-5 py-7 overflow-y-auto">
         <div className="mb-8 px-2">
           <Logo size="lg" />
         </div>
@@ -149,10 +103,10 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      {/* Columna principal — flex column que ocupa el alto restante */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
-        {/* Header mobile */}
-        <header className="md:hidden flex-shrink-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      {/* Columna principal */}
+      <div className="md:ml-64 flex flex-col min-h-dvh">
+        {/* Header mobile — sticky arriba */}
+        <header className="md:hidden sticky top-0 z-20 bg-bg/85 backdrop-blur-md border-b border-border" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="px-5 py-4 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <Logo size="md" />
@@ -179,52 +133,43 @@ export default function AppLayout() {
         <AccessBanner />
         <DemoBanner />
 
-        {/* Área de contenido con scroll interno */}
-        <main ref={mainRef} className="flex-1 overflow-y-auto min-h-0 relative">
-          {/* Indicador de pull-to-refresh */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 flex justify-center z-20"
-            style={{ height: pull, opacity: Math.min(pull / 60, 1) }}
-          >
-            <Loader2 size={20} className={cn('text-accent mt-2', (refreshing || pull >= 60) && 'animate-spin')} />
-          </div>
-          <div
-            style={{
-              transform: pull ? `translateY(${pull}px)` : undefined,
-              transition: pull ? 'none' : 'transform 0.2s ease',
-            }}
-          >
-            <div className="px-5 md:px-10 py-6 md:py-10 max-w-5xl mx-auto">
-              <Outlet />
-            </div>
+        {/* Contenido — fluye en el documento (scroll nativo). El padding-bottom
+            mobile deja espacio para el bottom nav fijo. */}
+        <main className="flex-1">
+          <div className="px-5 md:px-10 py-6 md:py-10 max-w-5xl mx-auto pb-28 md:pb-10">
+            <Outlet />
           </div>
         </main>
-
-        {/* Bottom nav mobile — hijo flex al fondo del marco dvh. Con el scroll
-            del documento bloqueado (useLockDocumentScroll) nunca se descoloca:
-            mientras el teclado está abierto queda detrás de él, y al cerrarlo
-            vuelve a su sitio sin recargar. */}
-        <nav className="md:hidden flex-shrink-0 bg-bg/95 backdrop-blur-lg border-t border-border" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <div className="grid grid-cols-6">
-            {tabs.map(t => (
-              <NavLink
-                key={t.to}
-                to={t.to}
-                end={t.end}
-                className={({ isActive }) =>
-                  cn(
-                    'flex flex-col items-center justify-center gap-1 py-3 text-[10px] transition',
-                    isActive ? 'text-accent' : 'text-muted',
-                  )
-                }
-              >
-                <t.icon size={20} />
-                <span>{t.shortLabel}</span>
-              </NavLink>
-            ))}
-          </div>
-        </nav>
       </div>
+
+      {/* Bottom nav mobile — fijo abajo; se oculta mientras el teclado está
+          abierto para no flotar sobre él. */}
+      <nav
+        className={cn(
+          'md:hidden fixed bottom-0 inset-x-0 z-30 bg-bg/95 backdrop-blur-lg border-t border-border',
+          keyboardOpen && 'hidden',
+        )}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="grid grid-cols-6">
+          {tabs.map(t => (
+            <NavLink
+              key={t.to}
+              to={t.to}
+              end={t.end}
+              className={({ isActive }) =>
+                cn(
+                  'flex flex-col items-center justify-center gap-1 py-3 text-[10px] transition',
+                  isActive ? 'text-accent' : 'text-muted',
+                )
+              }
+            >
+              <t.icon size={20} />
+              <span>{t.shortLabel}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
     </div>
   )
 }
