@@ -1,7 +1,20 @@
 # Neta. — Roadmap
 
 Checklist viva del producto. Marcamos `[x]` cuando algo se completa.
-Última actualización: 2026-06-08 (Agenda/recordatorios · fix teclado iOS — bloqueo de scroll del documento)
+Última actualización: 2026-06-10 (fix modal vs teclado · preview social OG · auditoría de seguridad + migración 013)
+
+## 🗓️ Sesión 2026-06-10 — completado (pre-lanzamiento beta 10 personas)
+
+- [x] **Fix: modal tapado por el teclado en móvil** — el bottom-sheet (`Modal.tsx`) estaba anclado a la pantalla completa con `position:fixed`; al subir el teclado quedaba debajo (lo reportó Roberto con el modal del código de Google). Ahora el marco sigue el viewport visible (`visualViewport`) y se apoya encima del teclado. Aplica a todos los modales. Desktop sin cambios.
+- [x] **Preview social al compartir el link (Open Graph)** — no había etiquetas OG y WhatsApp/IG no mostraban imagen. Se agregaron `og:` y `twitter:` en `index.html` + banner de marca 1200×630 (`public/og-image.png`, generador en `scripts/og-image.html`). Si el preview no refresca: Facebook Sharing Debugger → "Scrape Again", o compartir con `?v=1`.
+- [x] **Auditoría de seguridad completa (nota: 6/10 → ~8/10 con el fix)** — revisadas: auth, RLS, RPCs admin, códigos de invitación, Edge Functions de Lemon, secretos. Sólido: RLS owner en todas las tablas, webhook con HMAC timing-safe, `apply_lemon_event` solo service_role, RPCs admin verifican `is_admin()`, secretos fuera del repo.
+- [x] **Migración 013 — candado de columnas privilegiadas** ⚠️ **PENDIENTE DE CORRER EN PRODUCCIÓN** — hallazgo crítico: `profiles_self_update` no restringía columnas → una usuaria podía ponerse `role='admin'` (ver datos de todas) o `subscription_status='comped'`/extender trial (no pagar). Trigger BEFORE UPDATE que bloquea cambios a columnas de rol/suscripción salvo backend (RPCs security definer, service_role, SQL editor). Verificación post-run: guardar algo en Configuración debe seguir funcionando.
+
+**Hallazgos menores aceptados (no urgentes, re-evaluar al abrir al público):**
+- [ ] Signup por API directa no exige código de invitación (gating de beta es client-side; decisión deliberada de la migración 009)
+- [ ] Gating por suscripción vencida es solo client-side (RLS no mira `subscription_status`; una vencida podría seguir escribiendo SUS datos por API)
+- [ ] Rol `support` tiene los mismos poderes de edición que admin vía `profiles_admin_update` (no existe ningún support hoy)
+- [ ] `validate_invitation_code` expuesto a `anon` → códigos adivinables por fuerza bruta (usar códigos largos/no obvios)
 
 ## 🗓️ Sesión 2026-06-08 — completado (sin deploy aún, commiteado local)
 
@@ -177,6 +190,7 @@ Diseño completo en `docs/ADMIN.md`.
 
 ## 🔒 Seguridad y operación
 
+- [x] **Auditoría de seguridad + candado de columnas privilegiadas (migración 013)** — 2026-06-10, ver sesión arriba
 - [ ] Rate limiting básico (Supabase ya trae algo, revisar)
 - [ ] 2FA opcional para usuarias
 - [ ] Backups automáticos (Supabase los hace, validar política)
